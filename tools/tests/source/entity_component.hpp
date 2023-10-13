@@ -134,6 +134,10 @@ private:
 
 		e1.add_component<Random>();
 
+		Transform t1 = e1.get_component<Transform>();
+		t1.position[0] = 25.f;
+		std::cout << t1.position[0] << std::endl;
+
 		Random r1 = e1.get_component<Random>();
 
 		e1.add_component<Transform>(transform);

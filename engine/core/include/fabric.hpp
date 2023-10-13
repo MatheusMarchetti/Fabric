@@ -9,15 +9,15 @@ namespace fabric
 		class entity
 		{
 		public:
-			explicit entity() : _id{ id::invalid_id } {}
-			explicit entity(ecs::entity_id id) : _id(id) {}
+			explicit entity() : m_id{ id::invalid_id } {}
+			explicit entity(ecs::entity_id id) : m_id(id) {}
 
-			ecs::entity_id get_id() { return _id; }
+			ecs::entity_id get_id() { return m_id; }
 
 			template<typename Component>
 			constexpr bool has_component()
 			{
-				return ecs::has_component(_id, ecs::get_component_id<Component>());
+				return ecs::has_component(m_id, ecs::get_component_id<Component>());
 			}
 
 			template<typename Component>
@@ -25,7 +25,7 @@ namespace fabric
 			{
 				ecs::component component
 				{
-					.owner = _id,
+					.owner = m_id,
 					.id = ecs::get_component_id<Component>(),
 					.size = sizeof(Component)
 				};
@@ -38,7 +38,7 @@ namespace fabric
 			{
 				ecs::component comp
 				{
-					.owner = _id,
+					.owner = m_id,
 					.id = ecs::get_component_id<Component>(),
 					.data = &component,
 					.size = sizeof(Component)
@@ -50,10 +50,13 @@ namespace fabric
 			template<typename Component>
 			constexpr const Component& get_component()
 			{
-				Component* component = (Component*) ecs::get_component(_id, ecs::get_component_id<Component>());
+				Component* component = (Component*) ecs::get_component(m_id, ecs::get_component_id<Component>());
 
 				if (!component)
-					*component = Component();
+				{
+					Component comp = Component();
+					component = &comp;
+				}
 
 				return *component;
 			}
@@ -61,11 +64,11 @@ namespace fabric
 			template<typename Component>
 			constexpr void remove_component()
 			{
-				ecs::remove_component(_id, ecs::get_component_id<Component>());
+				ecs::remove_component(m_id, ecs::get_component_id<Component>());
 			}
 
 		private:
-			ecs::entity_id _id;
+			ecs::entity_id m_id;
 		};
 	}
 
