@@ -14,7 +14,7 @@ namespace fabric::memory
         return malloc(size);
     }
 
-    void pool_allocator::free(void* block)
+    void pool_allocator::deallocate(void* block)
     {
         ::free(block);
         block = nullptr;
