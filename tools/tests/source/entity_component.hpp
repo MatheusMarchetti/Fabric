@@ -44,7 +44,7 @@ struct Transform
 
 struct Tag {};
 
-class entity_component_test : public test
+class engine_test : public test
 {
 public:
 	virtual bool initialize() override
