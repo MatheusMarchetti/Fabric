@@ -1,5 +1,5 @@
 #include "scene.hpp"
-#include "utilities/sparse_set.hpp"
+#include "source/utilities/sparse_set.hpp"
 
 #include <iostream>
 

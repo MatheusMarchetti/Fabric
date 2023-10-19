@@ -18,8 +18,8 @@
 #include <DirectXMath.h>
 
 // Engine headers
-#include "../common/primitive_types.hpp"
-#include "../common/concepts.hpp"
-#include "../memory/memory.hpp"
-#include "../utilities/utilities.hpp"
-#include "../utilities/math.hpp"
+#include "source/common/primitive_types.hpp"
+#include "source/common/concepts.hpp"
+#include "source/memory/memory.hpp"
+#include "source/utilities/utilities.hpp"
+#include "source/utilities/math.hpp"

@@ -6,7 +6,6 @@
 #error One of the tests need to be enabled
 #endif
 
-
 int main()
 {
 #if _DEBUG
@@ -20,4 +19,6 @@ int main()
 	}
 
 	test.shutdown();
+
+	return 0;
 }
