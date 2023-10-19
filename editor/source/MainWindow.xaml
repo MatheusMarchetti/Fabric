@@ -4,9 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:editor"
+        xmlns:editors="clr-namespace:editor.editor_types"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Height="720" 
+        Width="1280"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen">
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <DockPanel>
+                <Menu DockPanel.Dock="Top">
+                    <MenuItem Header="_File">
+                        <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="OnSaveMenu_Click"/>
+                    </MenuItem>
+                </Menu>
+            </DockPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <editors:LevelEditorView/>
+        </Grid>
     </Grid>
 </Window>
