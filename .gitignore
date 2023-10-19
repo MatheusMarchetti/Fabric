@@ -31,10 +31,11 @@
 *.out
 *.app
 
-*.vs*
 *build*
+*.sln
 *.vcxproj*
 *.csproj*
-*.sln
+*.vs*
 editor/obj
 editor/source/obj
+

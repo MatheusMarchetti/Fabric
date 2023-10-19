@@ -1,10 +1,10 @@
 # Fabric
 
-# Dependencies:
+# Dependencies
 
 - Visual Studio 2022
 - .NET 7.0
 
-# Getting Started:
+# Getting Started
 
-To generate the solution and project files, run the "scripts/setup.bat" file 
+In order to generate the Solution and Project files, run "scripts/setup.bat"
