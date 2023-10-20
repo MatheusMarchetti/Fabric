@@ -91,12 +91,9 @@ namespace fabric::ecs
 			}
 		}
 
-		bool has(entity e)
+		bool has(id::id_type id)
 		{
-			id::id_type id = e.get_id();
-
 			assert(id::is_valid(id));
-
 			if (id::is_valid(id))
 			{
 				id::id_type index = id::index(id);
@@ -108,6 +105,13 @@ namespace fabric::ecs
 			}
 
 			return false;
+		}
+
+		bool has(entity e)
+		{
+			id::id_type id = e.get_id();
+
+			return has(id);
 		}
 
 		size_t size() { return m_size; }
