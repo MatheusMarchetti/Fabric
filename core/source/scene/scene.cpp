@@ -1,5 +1,5 @@
 #include "scene.hpp"
-#include "source/utilities/sparse_set.hpp"
+#include "sparse_set.hpp"
 
 #include <iostream>
 
@@ -10,22 +10,22 @@ namespace fabric::ecs
     namespace
     {
         // Entity storage
-        utl::vector<entity_id> m_registry;
-        entity_id m_next = id::invalid_id;
+        utl::vector<id::id_type> m_registry;
+        id::id_type m_next = id::invalid_id;
         u32 m_free_count = 0;
 
         // Component storage
-        std::unordered_map<component_id, utl::sparse_set> m_component_registry;
+        std::unordered_map<id::id_type, sparse_set> m_component_registry;
 
         // System storage - temporary
-        std::unordered_map<system_id, void(*)()> m_system_registry;
+        std::unordered_map<id::id_type, void(*)()> m_system_registry;
     }
 
-    entity_id create_entity()
+    entity create_entity()
     {
         if (m_free_count)
         {
-            entity_id id = id::new_generation(m_next);
+            id::id_type id = id::new_generation(m_next);
             id::id_type index = id::index(id);
             
             m_next = m_registry[index];
@@ -43,20 +43,22 @@ namespace fabric::ecs
 
             m_free_count--;
 
-            return id;
+            return entity(id);
         }
 
         size_t index = m_registry.size();
         u32 generation = 0;
 
-        entity_id id = m_registry.emplace_back(id::new_identifier(index, generation));
+        id::id_type id = m_registry.emplace_back(id::new_identifier(index, generation));
 
-        return id;
+        return entity(id);
     }
 
-    void remove_entity(entity_id id)
+    void remove_entity(entity e)
     {
-        assert(is_alive(id));
+        assert(is_alive(e));
+        
+        id::id_type id = e.get_id();
 
         id::id_type index = id::index(id);
         id::id_type generation = id::generation(id);
@@ -68,23 +70,24 @@ namespace fabric::ecs
         m_free_count++;
     }
 
-    bool is_alive(entity_id id)
+    bool is_alive(entity e)
     {
+        id::id_type id = e.get_id();
         id::id_type index = id::index(id);
         id::id_type generation = id::generation(id);
 
         return id::generation(m_registry[index]) == generation;
     }
 
-    system_id register_system(component_id owner, void(*function)())
+    id::id_type register_system(id::id_type owner, void(*function)())
     {
         m_system_registry[owner] = function;
         return owner;
     }
 
-    void add_dependency(system_id id, component_id dependency)
+    void add_dependency(id::id_type system_id, id::id_type dependency)
     {
-        std::cout << "System id: " << id << "Dependency id : " << dependency << std::endl;
+        std::cout << "System id: " << system_id << "Dependency id : " << dependency << std::endl;
     }
 
     void run_systems()
@@ -95,11 +98,19 @@ namespace fabric::ecs
         }
     }
 
-    bool has_component(entity_id id, component_id component)
+    std::span<entity> get_entities_with(id::id_type component_id)
+    {
+        size_t size = m_component_registry.contains(component_id) ? m_component_registry[component_id].count() : 0;
+        entity* entities = m_component_registry[component_id].dense();
+
+        return std::span<entity>(entities, size);
+    }
+
+    bool has_component(entity e, id::id_type component)
     {
         assert(m_component_registry.contains(component));
 
-        if (m_component_registry.contains(component) && m_component_registry[component].has(id))
+        if (m_component_registry.contains(component) && m_component_registry[component].has(e))
             return true;
 
         return false;
@@ -108,27 +119,27 @@ namespace fabric::ecs
     void add_component(component& component)
     {
         if (!m_component_registry.contains(component.id))
-            m_component_registry[component.id] = utl::sparse_set::create(component.size);
+            m_component_registry[component.id] = ecs::sparse_set::create(component.size);
 
-        m_component_registry[component.id].emplace(component.owner, component.data);
+        m_component_registry[component.id].emplace(*component.owner, component.data);
     }
 
-    void remove_component(entity_id id, component_id component)
+    void remove_component(entity e, id::id_type component)
     {
-        assert(has_component(id, component));
+        assert(has_component(e, component));
 
-        if (has_component(id, component))
+        if (has_component(e, component))
         {
-            m_component_registry[component].remove(id);
+            m_component_registry[component].remove(e);
         }
     }
 
-    void* get_component(entity_id id, component_id component)
+    void* get_component(entity e, id::id_type component)
     {
-        assert(has_component(id, component));
+        assert(has_component(e, component));
 
-        if (has_component(id, component))
-            return m_component_registry[component][id];
+        if (has_component(e, component))
+            return m_component_registry[component][e.get_id()];
 
         return nullptr;
     }

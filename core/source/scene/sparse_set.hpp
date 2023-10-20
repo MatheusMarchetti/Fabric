@@ -1,9 +1,10 @@
 #pragma once
 
+#include "scene.hpp"
 #include "source/common/common_headers.hpp"
 #include "source/common/identifier.hpp"
 
-namespace fabric::utl
+namespace fabric::ecs
 {
 	class sparse_set
 	{
@@ -23,7 +24,7 @@ namespace fabric::utl
 			resize(other.m_size);
 
 			memcpy_s(m_sparse, m_size * sizeof(id::id_type), other.m_sparse, m_size * sizeof(id::id_type));
-			memcpy_s(m_dense, m_size * sizeof(id::id_type), other.m_dense, m_size * sizeof(id::id_type));
+			memcpy_s(m_dense, m_size * sizeof(entity), other.m_dense, m_size * sizeof(entity));
 			memcpy_s(m_component, m_size * m_component_size, other.m_component, m_size * m_component_size);
 		}
 
@@ -34,7 +35,7 @@ namespace fabric::utl
 			resize(other.m_size);
 
 			memcpy_s(m_sparse, m_size * sizeof(id::id_type), other.m_sparse, m_size * sizeof(id::id_type));
-			memcpy_s(m_dense, m_size * sizeof(id::id_type), other.m_dense, m_size * sizeof(id::id_type));
+			memcpy_s(m_dense, m_size * sizeof(entity), other.m_dense, m_size * sizeof(entity));
 			memcpy_s(m_component, m_size * m_component_size, other.m_component, m_size * m_component_size);
 
 			return *this;
@@ -55,8 +56,10 @@ namespace fabric::utl
 			return sparse_set(component_size, size);
 		}
 
-		void emplace(id::id_type id, void* data)
+		void emplace(entity e, void* data)
 		{
+			id::id_type id = e.get_id();
+
 			assert(id::is_valid(id));
 
 			if (id::is_valid(id))
@@ -73,7 +76,7 @@ namespace fabric::utl
 					}
 
 					m_sparse[index] = next_component;
-					m_dense[next_component] = id;
+					m_dense[next_component] = e;
 
 					if(data)
 						memcpy_s((char*)m_component + next_component * m_component_size, m_component_size, data, m_component_size);
@@ -83,13 +86,15 @@ namespace fabric::utl
 				else
 				{
 					resize(2 * m_size);
-					emplace(id, data);
+					emplace(e, data);
 				}
 			}
 		}
 
-		bool has(id::id_type id)
+		bool has(entity e)
 		{
+			id::id_type id = e.get_id();
+
 			assert(id::is_valid(id));
 
 			if (id::is_valid(id))
@@ -106,22 +111,23 @@ namespace fabric::utl
 		}
 
 		size_t size() { return m_size; }
+		size_t count() { return (m_next_component - (char*)m_component) / m_component_size; }
 		bool empty() { return m_dense == nullptr; }
 
-		id::id_type* dense() { return m_dense; }
+		entity* dense() { return m_dense; }
 		void* component() { return m_component; }
 
 		void resize(size_t size)
 		{
 			id::id_type* sparse = (id::id_type*) memory::pool_allocator::allocate(size * sizeof(id::id_type));
-			id::id_type* dense = (id::id_type*)memory::pool_allocator::allocate(size * sizeof(id::id_type));
+			entity* dense = (entity*)memory::pool_allocator::allocate(size * sizeof(entity));
 			void* component = memory::pool_allocator::allocate(size * m_component_size);
 
 			if(sparse)
 				memset(sparse, -1, size * sizeof(id::id_type));
 
 			if (dense)
-				memset(dense, 0, size * sizeof(id::id_type));
+				memset(dense, -1, size * sizeof(entity));
 
 			if (component)
 				memset(component, 0, size * m_component_size);
@@ -131,7 +137,7 @@ namespace fabric::utl
 				assert(m_dense && m_component);
 
 				memcpy_s(sparse, size * sizeof(id::id_type), m_sparse, m_size);
-				memcpy_s(dense, size * sizeof(id::id_type), m_dense, m_size);
+				memcpy_s(dense, size * sizeof(entity), m_dense, m_size);
 				memcpy_s(component, size * m_component_size, m_sparse, m_size);
 
 				memory::pool_allocator::deallocate(m_sparse);
@@ -156,8 +162,10 @@ namespace fabric::utl
 			return nullptr;
 		}
 
-		void remove(id::id_type id)
+		void remove(entity e)
 		{
+			id::id_type id = e.get_id();
+
 			assert(id::is_valid(id));
 
 			if (id::is_valid(id))
@@ -171,7 +179,7 @@ namespace fabric::utl
 					m_next_component -= m_component_size;
 
 					m_dense[index] = m_dense[last];
-					m_dense[last] = id;
+					m_dense[last] = e;
 				
 					void* temp = malloc(m_component_size);
 
@@ -181,7 +189,7 @@ namespace fabric::utl
 
 					free(temp);
 
-					m_sparse[id::index(m_dense[last])] = index;
+					m_sparse[id::index(m_dense[last].get_id())] = index;
 					m_sparse[id::index(id)] = last;
 				}
 			}
@@ -192,7 +200,7 @@ namespace fabric::utl
 		size_t m_size = 0;
 		char* m_next_component = nullptr;
 		id::id_type* m_sparse = nullptr;
-		id::id_type* m_dense = nullptr;
+		entity* m_dense = nullptr;
 		void* m_component = nullptr;
 	};
 }
