@@ -69,8 +69,8 @@ public:
 
 	virtual void run() override
 	{ 
-		/*entity_test();
-		component_test();*/
+		entity_test();
+		component_test();
 
 		ecs::run_systems();
 		std::cin.get();

@@ -2,8 +2,8 @@
 
 #include "../source/scene/scene.hpp"
 
+// Temporary
 namespace fabric::ecs
 {
-	// Temporary
 	void run_systems();
 }
