@@ -5,12 +5,10 @@
 
 namespace detail
 {
-	extern u32 _componentCounter;
-
 	template<typename Component>
 	const fabric::id::id_type get_component_id()
 	{
-		static fabric::id::id_type id = fabric::id::id_type(_componentCounter++);
+		static fabric::id::id_type id = fabric::id::id_type(typeid(Component).hash_code());
 		return id;
 	}
 }
@@ -47,7 +45,7 @@ namespace fabric::ecs
 		template<typename Component>
 		constexpr bool has_component()
 		{
-			return has_component(*this, detail::get_component_id<Component>());
+			return ecs::has_component(*this, detail::get_component_id<Component>());
 		}
 
 		template<typename Component>
@@ -80,7 +78,7 @@ namespace fabric::ecs
 		template<typename Component>
 		constexpr Component& get_component()
 		{
-			Component* component = (Component*)get_component(*this, detail::get_component_id<Component>());
+			Component* component = (Component*)ecs::get_component(*this, detail::get_component_id<Component>());
 
 			if (!component)
 			{
@@ -94,7 +92,7 @@ namespace fabric::ecs
 		template<typename Component>
 		constexpr void remove_component()
 		{
-			remove_component(*this, detail::get_component_id<Component>());
+			ecs::remove_component(*this, detail::get_component_id<Component>());
 		}
 
 	private:

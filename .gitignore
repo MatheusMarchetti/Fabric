@@ -32,6 +32,7 @@
 
 *build*
 *.sln
+*.bin
 *.vcxproj*
 *.csproj*
 *.vs*

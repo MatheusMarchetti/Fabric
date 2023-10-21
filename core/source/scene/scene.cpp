@@ -1,11 +1,6 @@
 #include "registry.hpp"
 #include "scene.hpp"
 
-namespace detail
-{
-    u32 _componentCounter = 0;
-}
-
 namespace fabric::ecs
 {
     namespace
