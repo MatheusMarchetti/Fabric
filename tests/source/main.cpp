@@ -4,7 +4,7 @@
 #if TEST_ENTITY_COMPONENT
 #include "entity_component.hpp"
 #elif TEST_SERIALIZATION
-#include "serialization_test.h"
+#include "serialization_test.hpp"
 #else
 #error One of the tests need to be enabled
 #endif
