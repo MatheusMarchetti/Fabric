@@ -117,6 +117,7 @@ namespace fabric::ecs
 		size_t size() { return m_size; }
 		size_t count() { return (m_next_component - (char*)m_component) / m_component_size; }
 		bool empty() { return m_dense == nullptr; }
+		size_t component_size() { return m_component_size; }
 
 		entity* dense() { return m_dense; }
 		void* component() { return m_component; }

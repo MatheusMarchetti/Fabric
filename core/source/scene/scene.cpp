@@ -1,10 +1,13 @@
 #include "registry.hpp"
 #include "scene.hpp"
 
-namespace fabric::ecs
+namespace detail
 {
     u32 _componentCounter = 0;
-    
+}
+
+namespace fabric::ecs
+{
     namespace
     {
         registry m_registry;
@@ -98,6 +101,41 @@ namespace fabric::ecs
             return m_registry.get_component_storage(component)[e.get_id()];
 
         return nullptr;
+    }
+
+    bool save_scene()
+    {
+        // TODO: This should be handled by a VFS and accessed via a scene asset handle
+        FILE* bin;
+        fopen_s(&bin, "entities.bin", "wb");
+
+        if (bin)
+        {
+            m_registry.serialize(bin);
+            fclose(bin);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool load_scene()
+    {
+        // TODO: This should be handled by a VFS and accessed via a scene asset handle
+        FILE* bin;
+        fopen_s(&bin, "entities.bin", "rb");
+
+        if (bin)
+        {
+            bool result = m_registry.deserialize(bin);
+
+            fclose(bin);
+
+            return result;
+        }
+
+        return false;
     }
 }
 

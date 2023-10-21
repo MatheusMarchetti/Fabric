@@ -1,7 +1,10 @@
-#define TEST_ENTITY_COMPONENT 1
+#define TEST_ENTITY_COMPONENT 0
+#define TEST_SERIALIZATION 1
 
 #if TEST_ENTITY_COMPONENT
 #include "entity_component.hpp"
+#elif TEST_SERIALIZATION
+#include "serialization_test.h"
 #else
 #error One of the tests need to be enabled
 #endif

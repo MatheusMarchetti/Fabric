@@ -3,12 +3,22 @@
 #include "common.hpp"
 #include "../utilities/type_list.hpp"
 
+namespace detail
+{
+	extern u32 _componentCounter;
+
+	template<typename Component>
+	const fabric::id::id_type get_component_id()
+	{
+		static fabric::id::id_type id = fabric::id::id_type(_componentCounter++);
+		return id;
+	}
+}
+
 namespace fabric::ecs
 {
 	class entity;
 	struct None {};
-
-	extern u32 _componentCounter;
 
 	struct component
 	{
@@ -18,17 +28,13 @@ namespace fabric::ecs
 		u64 size = 0;
 	};
 
-	template<typename Component>
-	const id::id_type get_component_id()
-	{
-		static id::id_type id = id::id_type(_componentCounter++);
-		return id;
-	}
-
 	bool has_component(entity e, id::id_type component);
 	void add_component(component& component);
 	void remove_component(entity e, id::id_type component);
 	void* get_component(entity e, id::id_type component);
+
+	bool save_scene();
+	bool load_scene();
 
 	class entity
 	{
@@ -41,16 +47,16 @@ namespace fabric::ecs
 		template<typename Component>
 		constexpr bool has_component()
 		{
-			return ecs::has_component(*this, ecs::get_component_id<Component>());
+			return has_component(*this, detail::get_component_id<Component>());
 		}
 
 		template<typename Component>
 		constexpr void add_component()
 		{
-			ecs::component component
+			component component
 			{
 				.owner = this,
-				.id = ecs::get_component_id<Component>(),
+				.id = detail::get_component_id<Component>(),
 				.size = sizeof(Component)
 			};
 
@@ -58,23 +64,23 @@ namespace fabric::ecs
 		}
 
 		template<typename Component>
-		constexpr void add_component(Component& component)
+		constexpr void add_component(Component& c)
 		{
-			ecs::component comp
+			component component
 			{
 				.owner = this,
-				.id = ecs::get_component_id<Component>(),
-				.data = &component,
+				.id = detail::get_component_id<Component>(),
+				.data = &c,
 				.size = sizeof(Component)
 			};
 
-			ecs::add_component(comp);
+			ecs::add_component(component);
 		}
 
 		template<typename Component>
 		constexpr Component& get_component()
 		{
-			Component* component = (Component*)ecs::get_component(*this, ecs::get_component_id<Component>());
+			Component* component = (Component*)get_component(*this, detail::get_component_id<Component>());
 
 			if (!component)
 			{
@@ -88,7 +94,7 @@ namespace fabric::ecs
 		template<typename Component>
 		constexpr void remove_component()
 		{
-			ecs::remove_component(*this, ecs::get_component_id<Component>());
+			remove_component(*this, detail::get_component_id<Component>());
 		}
 
 	private:
@@ -103,7 +109,7 @@ namespace fabric::ecs
 	template<typename Component>
 	std::span<entity> get_entities_with()
 	{
-		return get_entities_with(get_component_id<Component>());
+		return get_entities_with(detail::get_component_id<Component>());
 	}
 
 	template<typename Component>
@@ -143,8 +149,8 @@ namespace fabric::ecs
 		requires is_not_same<Component, Head>
 	void register_system(system<Component, Head, Tail...>& sys)
 	{
-		id::id_type id = ecs::register_system(ecs::get_component_id<utl::front_t<Owner<Component>>>(), sys.function);
-		ecs::add_dependency(id, ecs::get_component_id<utl::front_t<Dependencies<Head>>>());
+		id::id_type id = register_system(detail::get_component_id<utl::front_t<Owner<Component>>>(), sys.function);
+		add_dependency(id, detail::get_component_id<utl::front_t<Dependencies<Head>>>());
 
 		Owner<Component> component_ownership;
 		Dependencies<Tail...> component_dependencies;
@@ -162,8 +168,8 @@ namespace fabric::ecs
 		requires is_not_same<Component, Head>
 	void register_system(system<Component, Head>& sys)
 	{
-		id::id_type id = ecs::register_system(ecs::get_component_id<utl::front_t<Owner<Component>>>(), sys.function);
-		ecs::add_dependency(id, ecs::get_component_id<utl::front_t<Dependencies<Head>>>());
+		id::id_type id = register_system(detail::get_component_id<utl::front_t<Owner<Component>>>(), sys.function);
+		add_dependency(id, detail::get_component_id<utl::front_t<Dependencies<Head>>>());
 	}
 }
 
