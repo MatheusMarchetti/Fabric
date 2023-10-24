@@ -27,8 +27,15 @@
 *.lib
 
 # Executables
-*.exe
 *.out
 *.app
 
 *build*
+*.sln
+*.bin
+*.vcxproj*
+*.csproj*
+*.vs*
+editor/obj
+editor/source/obj
+

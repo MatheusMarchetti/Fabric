@@ -1,0 +1,34 @@
+#include "memory.hpp"
+
+#include <memory>
+
+namespace fabric::memory
+{
+    namespace
+    {
+
+    }
+
+    void* pool_allocator::allocate(size_t size)
+    {
+        return malloc(size);
+    }
+
+    void pool_allocator::deallocate(void* block)
+    {
+        ::free(block);
+        block = nullptr;
+    }
+
+    void* linear_allocator::allocate(size_t size)
+    {
+        return malloc(size);
+    }
+
+    void linear_allocator::deallocate(void* block)
+    {
+        ::free(block);
+        block = nullptr;
+    }
+}
+
