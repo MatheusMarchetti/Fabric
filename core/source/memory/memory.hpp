@@ -7,4 +7,10 @@ namespace fabric::memory
 		void* allocate(size_t size);
 		void deallocate(void* block);
 	}
+
+	namespace linear_allocator
+	{
+		void* allocate(size_t size);
+		void deallocate(void* block);
+	}
 }

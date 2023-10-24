@@ -99,6 +99,7 @@ namespace fabric::ecs
     {
         // get all entities
         utl::vector<entity_entry> entities(m_entity_registry.size());
+        u32 total_size = 0;
         // for each component in registry, distribute along their entities
         for (auto& [component_id, component] : m_component_registry)
         {
@@ -123,6 +124,8 @@ namespace fabric::ecs
                 e_entry.total_size += component_size;
                 e_entry.component_count += 1;
                 e_entry.components.push_back(c_entry);
+
+                total_size += component_size;
             }
         }
         
@@ -137,6 +140,8 @@ namespace fabric::ecs
             {
                 if (entry.component_count > 0)
                     packed_entities.push_back(entry);
+                else
+                    total_size -= entry.total_size;
             }
         }
         else
@@ -148,6 +153,7 @@ namespace fabric::ecs
 
         u32 entity_count = (u32)packed_entities.size();  // For validation after reading
         fwrite(&entity_count, sizeof(entity_count), 1, binary_file);
+        fwrite(&total_size, sizeof(total_size), 1, binary_file); //Total size needed for components
 
         for (auto& entity : packed_entities)
         {
@@ -169,6 +175,13 @@ namespace fabric::ecs
         u32 entity_count;
         fread(&entity_count, sizeof(entity_count), 1, binary_file);
 
+        u32 total_size;
+        fread(&total_size, sizeof(total_size), 1, binary_file);
+
+        u32 offset = 0;
+
+        void* block = memory::linear_allocator::allocate(total_size);
+
         for (u32 i = 0; i < entity_count; i++)
         {
             id::id_type eid = create_entity();
@@ -176,8 +189,8 @@ namespace fabric::ecs
 
             u32 read = 0;
 
-            u32 total_size;
-            fread(&total_size, sizeof(total_size), 1, binary_file);
+            u32 entity_size;
+            fread(&entity_size, sizeof(entity_size), 1, binary_file);
 
             u32 component_count;
             fread(&component_count, sizeof(component_count), 1, binary_file);
@@ -193,21 +206,29 @@ namespace fabric::ecs
                 if (!component_exists(component_id))
                     register_component(component_id, component_size);
 
-                void* data = malloc(component_size);
+                void* data = (char*)block + offset;
 
                 if (data)
                 {
                     fread(data, component_size, 1, binary_file);
                     get_component_storage(component_id).emplace(e, data);
-                    free(data);
 
                     read += component_size;
+                    offset += component_size;
                 }
             }
 
-            if (read != total_size)
+            if (read != entity_size)
+            {
+                memory::linear_allocator::deallocate(block);
                 return false;
+            }
         }
+
+        memory::linear_allocator::deallocate(block);
+
+        if (offset != total_size)
+            return false;
 
         return true;
     }
