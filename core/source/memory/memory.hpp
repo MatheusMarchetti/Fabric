@@ -9,7 +9,6 @@ namespace fabric::memory
 	public:
 		linear_block(void* memory, u32 size);
 		void* allocate(u32 size);
-		void* deallocate(u32 size);
 
 		// temporary
 		void free();
@@ -20,15 +19,44 @@ namespace fabric::memory
 		u32 m_offset;
 	};
 
-	namespace pool_allocator
+	class stack_block
 	{
-		void* allocate(size_t size);
-		void deallocate(void* block);
-	}
+	public:
+		stack_block(void* memory, u32 size);
+		void* allocate(u32 size);
+		void* deallocate(void* memory);
+
+		// temporary
+		void free();
+
+	private:
+		struct header
+		{
+			u32 allocation_size;
+		};
+
+	private:
+		void* m_block;
+		u32 m_size;
+		u32 m_offset;
+	};
 
 	namespace linear_allocator
 	{
 		linear_block request_block(u32 block_size);
 		void return_block(linear_block& block);
 	}
+
+	namespace stack_allocator
+	{
+		stack_block request_block(u32 block_size);
+		void return_block(stack_block& block);
+	}
+
+	namespace pool_allocator
+	{
+		void* allocate(size_t size);
+		void deallocate(void* block);
+	}
+
 }
