@@ -11,7 +11,7 @@ namespace fabric::ecs
 	public:
 		sparse_set() = default;
 
-		sparse_set(size_t component_size, size_t size = 1024)
+		sparse_set(u32 component_size, u32 size = 1024)
 			: m_component_size(component_size)
 		{
 			resize(size);
@@ -46,12 +46,12 @@ namespace fabric::ecs
 			m_component_size = 0;
 			m_size = 0;
 
-			memory::pool_allocator::deallocate(m_sparse);
-			memory::pool_allocator::deallocate(m_dense);
-			memory::pool_allocator::deallocate(m_component);
+			memory::raw_allocator::return_raw(m_sparse);
+			memory::raw_allocator::return_raw(m_dense);
+			memory::raw_allocator::return_raw(m_component);
 		}
 
-		static sparse_set create(size_t component_size, size_t size = 1024)
+		static sparse_set create(u32 component_size, u32 size = 1024)
 		{
 			return sparse_set(component_size, size);
 		}
@@ -114,30 +114,30 @@ namespace fabric::ecs
 			return has(id);
 		}
 
-		size_t size() { return m_size; }
-		size_t count() { return (m_next_component - (char*)m_component) / m_component_size; }
+		u32 size() { return m_size; }
+		u32 count() { return (u32)(m_next_component - (char*)m_component) / m_component_size; }
 		bool empty() { return m_dense == nullptr; }
-		size_t component_size() { return m_component_size; }
+		u32 component_size() { return m_component_size; }
 
 		entity* dense() { return m_dense; }
 		void* component() { return m_component; }
 
-		void resize(size_t size)
+		void resize(u32 size)
 		{
-			id::id_type* sparse = (id::id_type*) memory::pool_allocator::allocate(size * sizeof(id::id_type));
-			entity* dense = (entity*)memory::pool_allocator::allocate(size * sizeof(entity));
-			void* component = memory::pool_allocator::allocate(size * m_component_size);
+			id::id_type* sparse = (id::id_type*)memory::raw_allocator::request_raw(size * sizeof(id::id_type));
+			entity* dense = (entity*)memory::raw_allocator::request_raw(size * sizeof(entity));
+			void* component = memory::raw_allocator::request_raw(size * m_component_size);
 
 			if(sparse)
 				memset(sparse, -1, size * sizeof(id::id_type));
 
-			if (dense)
+			if(dense)
 				memset(dense, -1, size * sizeof(entity));
 
-			if (component)
+			if(component)
 				memset(component, 0, size * m_component_size);
 
-			if (m_sparse)
+			if(m_sparse)
 			{
 				assert(m_dense && m_component);
 
@@ -145,9 +145,9 @@ namespace fabric::ecs
 				memcpy_s(dense, size * sizeof(entity), m_dense, m_size);
 				memcpy_s(component, size * m_component_size, m_sparse, m_size);
 
-				memory::pool_allocator::deallocate(m_sparse);
-				memory::pool_allocator::deallocate(m_dense);
-				memory::pool_allocator::deallocate(m_component);
+				memory::raw_allocator::return_raw(m_sparse);
+				memory::raw_allocator::return_raw(m_dense);
+				memory::raw_allocator::return_raw(m_component);
 			}
 
 			m_next_component = (char*)component + (m_size * m_component_size);
@@ -186,13 +186,11 @@ namespace fabric::ecs
 					m_dense[index] = m_dense[last];
 					m_dense[last] = e;
 				
-					void* temp = malloc(m_component_size);
+					char* temp[256];	// 256 bytes per component SHOULD be enough...
 
 					memcpy_s(temp, m_component_size, (char*)m_component + index * m_component_size, m_component_size);
 					memcpy_s((char*)m_component + index * m_component_size, m_component_size, (char*)m_component + last * m_component_size, m_component_size);
 					memcpy_s((char*)m_component + last * m_component_size, m_component_size, temp, m_component_size);
-
-					free(temp);
 
 					m_sparse[id::index(m_dense[last].get_id())] = index;
 					m_sparse[id::index(id)] = last;
@@ -201,8 +199,8 @@ namespace fabric::ecs
 		}
 
 	private:
-		size_t m_component_size = 0;
-		size_t m_size = 0;
+		u32 m_component_size = 0;
+		u32 m_size = 0;
 		char* m_next_component = nullptr;
 		id::id_type* m_sparse = nullptr;
 		entity* m_dense = nullptr;
