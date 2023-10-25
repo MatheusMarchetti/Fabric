@@ -180,7 +180,7 @@ namespace fabric::ecs
 
         u32 offset = 0;
 
-        void* block = memory::linear_allocator::allocate(total_size);
+        memory::linear_block block = memory::linear_allocator::request_block(total_size);
 
         for (u32 i = 0; i < entity_count; i++)
         {
@@ -206,7 +206,7 @@ namespace fabric::ecs
                 if (!component_exists(component_id))
                     register_component(component_id, component_size);
 
-                void* data = (char*)block + offset;
+                void* data = block.allocate(component_size);
 
                 if (data)
                 {
@@ -220,12 +220,12 @@ namespace fabric::ecs
 
             if (read != entity_size)
             {
-                memory::linear_allocator::deallocate(block);
+                memory::linear_allocator::return_block(block);
                 return false;
             }
         }
 
-        memory::linear_allocator::deallocate(block);
+        memory::linear_allocator::return_block(block);
 
         if (offset != total_size)
             return false;
