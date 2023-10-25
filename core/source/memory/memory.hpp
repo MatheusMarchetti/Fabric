@@ -58,5 +58,4 @@ namespace fabric::memory
 		void* allocate(size_t size);
 		void deallocate(void* block);
 	}
-
 }
