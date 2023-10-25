@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../source/memory/memory.hpp"
 #include "../source/scene/scene.hpp"
 
 // Temporary
