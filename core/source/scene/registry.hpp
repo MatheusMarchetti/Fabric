@@ -16,11 +16,11 @@ namespace fabric::ecs
 
         sparse_set& get_component_storage(id::id_type component_id);
 
-        size_t get_component_count(id::id_type component_id);
+        u32 get_component_count(id::id_type component_id);
 
         bool component_exists(id::id_type component_id);
 
-		void register_component(id::id_type component_id, size_t component_size);
+		void register_component(id::id_type component_id, u32 component_size);
 
 		void serialize(FILE* binary_file);
 

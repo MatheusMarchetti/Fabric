@@ -77,7 +77,7 @@ namespace fabric::ecs
         return m_component_registry[component_id];
     }
 
-    size_t registry::get_component_count(id::id_type component_id)
+    u32 registry::get_component_count(id::id_type component_id)
     {
         return component_exists(component_id) ? m_component_registry[component_id].count() : 0;
     }
@@ -90,7 +90,7 @@ namespace fabric::ecs
         return false;
     }
 
-    void registry::register_component(id::id_type component_id, size_t component_size)
+    void registry::register_component(id::id_type component_id, u32 component_size)
     {
         m_component_registry[component_id] = ecs::sparse_set::create(component_size);
     }

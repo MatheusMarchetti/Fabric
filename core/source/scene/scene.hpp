@@ -23,7 +23,7 @@ namespace fabric::ecs
 		entity* owner;
 		id::id_type id;
 		void* data = nullptr;
-		u64 size = 0;
+		u32 size = 0;
 	};
 
 	bool has_component(entity e, id::id_type component);
