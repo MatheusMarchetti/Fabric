@@ -16,7 +16,6 @@ namespace detail
 namespace fabric::ecs
 {
 	class entity;
-	struct None {};
 
 	struct component
 	{
@@ -110,64 +109,28 @@ namespace fabric::ecs
 		return get_entities_with(detail::get_component_id<Component>());
 	}
 
-	template<typename Component>
-	using Owner = typename utl::type_list<Component>;
-
 	template<typename Head, typename... Tail>
-	using Dependencies = typename utl::type_list<Head, Tail...>;
-
-	template<typename Component, typename Head, typename... Tail>
-	struct system
-	{
-		Owner<Component> owner;
-		Dependencies<Head, Tail...> dependencies;
-		void (*function)();
-	};
-
-	/// Convenience macro for registering systems.
-	/// @param OWNER: Component that owns the system
-	/// @param FN: Callback to system behavior function
-	/// @param ...: Dependencies that must be resolved before this system can run
-#define REGISTER_SYSTEM(OWNER, FN, ...)							\
-		ecs::Owner<OWNER> OWNER##_ownership;					\
-		ecs::Dependencies<__VA_ARGS__> OWNER##_dependencies;	\
-		ecs::system<OWNER, __VA_ARGS__> OWNER##_system		\
-		{														\
-			.owner = OWNER##_ownership,							\
-			.dependencies = OWNER##_dependencies,				\
-			.function = &FN										\
-		};														\
-		ecs::register_system(OWNER##_system);
+	using dependencies = typename utl::type_list<Head, Tail...>;
 	
-	id::id_type register_system(id::id_type owner, void(*function)());
+	id::id_type add_system(id::id_type owner, void(*function)());
 	void add_dependency(id::id_type system_id, id::id_type dependency);
 
 	// NOTE: The template requirement ensures that the user doesn't add the owner as a dependency
-	template<typename Component, typename Head, typename... Tail>
-		requires is_not_same<Component, Head>
-	void register_system(system<Component, Head, Tail...>& sys)
+	template<typename Owner, typename Head, typename... Tail>
+		requires is_not_same<Owner, Head>
+	void register_system(void(*function)())
 	{
-		id::id_type id = register_system(detail::get_component_id<utl::front_t<Owner<Component>>>(), sys.function);
-		add_dependency(id, detail::get_component_id<utl::front_t<Dependencies<Head>>>());
+		id::id_type id = ecs::add_system(detail::get_component_id<utl::front_t<utl::type_list<Owner>>>(), function);
+		ecs::add_dependency(id, detail::get_component_id<utl::front_t<utl::type_list<Head>>>());
 
-		Owner<Component> component_ownership;
-		Dependencies<Tail...> component_dependencies;
-		system<Component, Tail...> component_system
-		{
-			.owner = component_ownership,
-			.dependencies = component_dependencies,
-			.function = sys.function
-		};
-
-		register_system(component_system);
+		if constexpr (sizeof...(Tail) != 0)
+			register_system<Owner, Tail...>(function);
 	}
 
-	template<typename Component, typename Head>
-		requires is_not_same<Component, Head>
-	void register_system(system<Component, Head>& sys)
+	template<typename Owner>
+	void register_system(void(*function)())
 	{
-		id::id_type id = register_system(detail::get_component_id<utl::front_t<Owner<Component>>>(), sys.function);
-		add_dependency(id, detail::get_component_id<utl::front_t<Dependencies<Head>>>());
+		id::id_type id = ecs::add_system(detail::get_component_id<utl::front_t<utl::type_list<Owner>>>(), function);
 	}
 }
 

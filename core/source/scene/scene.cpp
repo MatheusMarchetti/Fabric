@@ -35,7 +35,7 @@ namespace fabric::ecs
         return id::generation(m_registry[index]) == generation;
     }
 
-    id::id_type register_system(id::id_type owner, void(*function)())
+    id::id_type add_system(id::id_type owner, void(*function)())
     {
         m_system_registry[owner] = function;
         return owner;

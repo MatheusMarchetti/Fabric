@@ -62,7 +62,7 @@ class engine_test : public test
 public:
 	virtual bool initialize() override
 	{
-		serialize();
+		//serialize();
 
 		return ecs::load_scene();
 	}

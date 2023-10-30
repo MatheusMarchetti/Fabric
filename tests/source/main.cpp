@@ -1,5 +1,5 @@
-#define TEST_ENTITY_COMPONENT 0
-#define TEST_SERIALIZATION 1
+#define TEST_ENTITY_COMPONENT 1
+#define TEST_SERIALIZATION 0
 
 #if TEST_ENTITY_COMPONENT
 #include "entity_component.hpp"

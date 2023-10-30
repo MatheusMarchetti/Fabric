@@ -27,7 +27,10 @@ struct Transform
 	}
 };
 
-struct Tag {};
+struct Tag 
+{
+	char* tag = nullptr;
+};
 
 void system_func()
 {
@@ -78,7 +81,7 @@ public:
 
 	virtual void shutdown() override
 	{  
-
+		ecs::save_scene();
 	}
 
 private:
@@ -198,8 +201,9 @@ private:
 			e.add_component<Transform>(transform);
 		}
 
-		REGISTER_SYSTEM(Tag, system_func, Transform, Random);
-		REGISTER_SYSTEM(Transform, update_transforms, ecs::None);
+		ecs::register_system<Random>(system_func);
+		ecs::register_system<Tag, Random>(system_func);
+		ecs::register_system<Transform, Random, Tag>(update_transforms);
 	}
 
 private:
