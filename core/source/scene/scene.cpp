@@ -8,7 +8,7 @@ namespace fabric::ecs
         registry m_registry;
 
         // System storage - temporary
-        std::unordered_map<id::id_type, void(*)()> m_system_registry;
+        utl::unordered_map<id::id_type, void(*)()> m_system_registry;
     }
 
     entity create_entity()
@@ -54,12 +54,12 @@ namespace fabric::ecs
         }
     }
 
-    std::span<entity> get_entities_with(id::id_type component_id)
+    utl::span<entity> get_entities_with(id::id_type component_id)
     {
         size_t size = m_registry.get_component_count(component_id);
         entity* entities = m_registry.get_component_storage(component_id).dense();
 
-        return std::span<entity>(entities, size);
+        return utl::span<entity>(entities, size);
     }
 
     bool has_component(entity e, id::id_type component)

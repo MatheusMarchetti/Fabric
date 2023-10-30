@@ -28,7 +28,7 @@ namespace fabric::ecs
 
 	private:
 		utl::vector<id::id_type> m_entity_registry;
-        std::unordered_map<id::id_type, sparse_set> m_component_registry;
+        utl::unordered_map<id::id_type, sparse_set> m_component_registry;
 
 		id::id_type m_next = id::invalid_id;
 		u32 m_free_count = 0;

@@ -1,11 +1,12 @@
 #pragma once
 
 #define USE_STL_VECTOR 1
-#define USE_STL_DEQUE 1
+#define USE_STL_SPAN 1
+#define USE_STL_UNORDERED_MAP 1
 
 #if USE_STL_VECTOR
 #include <vector>
-namespace fabric::utl 
+namespace fabric::utl
 {
 	template<typename T>
 	using vector = typename std::vector<T>;
@@ -26,15 +27,20 @@ namespace fabric::utl
 }
 #endif
 
-#if USE_STL_DEQUE
-#include <deque>
-namespace fabric::utl {
+#if USE_STL_SPAN
+#include <span>
+namespace fabric::utl
+{
 	template<typename T>
-	using deque = typename std::deque<T>;
+	using span = std::span<T>;
 }
 #endif
 
+#if USE_STL_UNORDERED_MAP
+#include <unordered_map>
 namespace fabric::utl
 {
-
+	template<typename Key, typename Value>
+	using unordered_map = typename std::unordered_map<Key, Value>;
 }
+#endif
