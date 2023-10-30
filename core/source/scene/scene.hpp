@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "../utilities/type_list.hpp"
 
 namespace detail
 {
@@ -101,16 +100,13 @@ namespace fabric::ecs
 	entity create_entity();
 	void remove_entity(entity e);
 	bool is_alive(entity e);
-	std::span<entity> get_entities_with(id::id_type id);
+	utl::span<entity> get_entities_with(id::id_type id);
 
 	template<typename Component>
-	std::span<entity> get_entities_with()
+	utl::span<entity> get_entities_with()
 	{
 		return get_entities_with(detail::get_component_id<Component>());
 	}
-
-	template<typename Head, typename... Tail>
-	using dependencies = typename utl::type_list<Head, Tail...>;
 	
 	id::id_type add_system(id::id_type owner, void(*function)());
 	void add_dependency(id::id_type system_id, id::id_type dependency);
@@ -120,8 +116,8 @@ namespace fabric::ecs
 		requires is_not_same<Owner, Head>
 	void register_system(void(*function)())
 	{
-		id::id_type id = ecs::add_system(detail::get_component_id<utl::front_t<utl::type_list<Owner>>>(), function);
-		ecs::add_dependency(id, detail::get_component_id<utl::front_t<utl::type_list<Head>>>());
+		id::id_type id = ecs::add_system(detail::get_component_id<Owner>(), function);
+		ecs::add_dependency(id, detail::get_component_id<Head>());
 
 		if constexpr (sizeof...(Tail) != 0)
 			register_system<Owner, Tail...>(function);
@@ -130,7 +126,7 @@ namespace fabric::ecs
 	template<typename Owner>
 	void register_system(void(*function)())
 	{
-		id::id_type id = ecs::add_system(detail::get_component_id<utl::front_t<utl::type_list<Owner>>>(), function);
+		id::id_type id = ecs::add_system(detail::get_component_id<Owner>(), function);
 	}
 }
 
@@ -139,6 +135,6 @@ namespace std
 	template<>
 	struct hash<fabric::id::id_type>
 	{
-		size_t operator()(fabric::id::id_type const& id) const noexcept { return u64(id); }
+		size_t operator()(fabric::id::id_type const& id) const noexcept { return size_t(id); }
 	};
 }
