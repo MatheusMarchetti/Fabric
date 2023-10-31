@@ -1,6 +1,8 @@
 #include "registry.hpp"
 #include "scene.hpp"
 
+#include "source/utilities/graph.hpp"
+
 namespace fabric::ecs
 {
     namespace
@@ -9,6 +11,7 @@ namespace fabric::ecs
 
         // System storage - temporary
         utl::unordered_map<id::id_type, void(*)()> m_system_registry;
+        utl::graph m_system_graph;
     }
 
     entity create_entity()
@@ -38,19 +41,27 @@ namespace fabric::ecs
     id::id_type add_system(id::id_type owner, void(*function)())
     {
         m_system_registry[owner] = function;
+        m_system_graph.add_node(owner);
         return owner;
     }
 
     void add_dependency(id::id_type system_id, id::id_type dependency)
     {
-        
+        m_system_graph.add_dependency(system_id, dependency);
     }
 
     void run_systems()
     {
-        for (auto& system : m_system_registry)
+        m_system_graph.build();
+
+        auto execution_order = m_system_graph.get_execution_order();
+
+        for (auto& order : execution_order)
         {
-            system.second();
+            for (auto& index : order)
+            {
+                m_system_registry[index]();
+            }
         }
     }
 

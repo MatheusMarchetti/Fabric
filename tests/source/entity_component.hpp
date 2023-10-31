@@ -201,9 +201,9 @@ private:
 			e.add_component<Transform>(transform);
 		}
 
+		ecs::register_system<Transform, Random, Tag>(update_transforms);
 		ecs::register_system<Random>(system_func);
 		ecs::register_system<Tag, Random>(system_func);
-		ecs::register_system<Transform, Random, Tag>(update_transforms);
 	}
 
 private:
