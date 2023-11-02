@@ -5,7 +5,9 @@ workspace "Fabric"
     { 
         "Debug", 
         "Profiling", 
-        "Release"
+        "Release",
+        "DebugEditor",
+        "ReleaseEditor"
     }
 
     flags
@@ -33,15 +35,15 @@ workspace "Fabric"
     filter "configurations:Release"
         symbols "Off"
         optimize "Speed"
+        
+    group "dependencies"
+    group ""
 
-group "dependencies"
-group ""
+    group "core"
+        include "core"
+    group ""
 
-group "core"
-    include "core"
-group ""
-
-group "tools"
-    --include "editor"
-    include "tests"
-group ""
+    group "tools"
+        --include "editor"
+        include "tests"
+    group ""
