@@ -42,6 +42,6 @@ group "core"
 group ""
 
 group "tools"
-    include "editor"
+    --include "editor"
     include "tests"
 group ""
