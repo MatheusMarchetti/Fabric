@@ -232,4 +232,13 @@ namespace fabric::ecs
 
         return true;
     }
+
+    void registry::clear()
+    {
+        m_entity_registry.clear();
+        m_component_registry.clear();
+
+        m_next = id::invalid_id;
+        m_free_count = 0;
+    }
 }

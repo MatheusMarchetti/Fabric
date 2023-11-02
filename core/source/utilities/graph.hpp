@@ -33,13 +33,15 @@ namespace fabric::utl
 
 		utl::vector<utl::vector<id::id_type>> get_execution_order();
 
+		void clear();
+
 	private:
 		struct graph_node
 		{
 			id::id_type node_id;
 			u32 node_index;
 			u32 dependency_level_index = u32_invalid_id;
-			u32 execution_index = 0;
+			u32 queue_index = 0;
 		};
 
 		struct dependency_level
@@ -52,7 +54,7 @@ namespace fabric::utl
 
 	private:
 		u32 m_node_index;
-		u32 m_execution_count;
+		u32 m_queue_count;
 		utl::unordered_map<id::id_type, graph_node> m_nodes;
 		utl::vector<utl::vector<graph_node>> m_adjacency_list;
 		utl::vector<graph_node> m_node_list;
@@ -202,7 +204,7 @@ namespace fabric::utl
 		}
 
 		m_dependency_levels.resize(dependency_level_count);
-		m_execution_count = 1;
+		m_queue_count = 1;
 
 		for (u32 node_index = 0; node_index < m_node_list.size(); node_index++)
 		{
@@ -216,7 +218,7 @@ namespace fabric::utl
 			level.level_index = level_index;
 			level.level_nodes.push_back(node);
 
-			m_execution_count = std::max(m_execution_count, node.execution_index + 1);
+			m_queue_count = std::max(m_queue_count, node.queue_index + 1);
 		}
 	}
 
@@ -259,5 +261,13 @@ namespace fabric::utl
 		}
 
 		return execution_list;
+	}
+
+	inline void graph::clear()
+	{
+		m_nodes.clear();
+		m_adjacency_list.clear();
+		m_node_list.clear();
+		m_dependency_levels.clear();
 	}
 }

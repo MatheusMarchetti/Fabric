@@ -26,6 +26,8 @@ namespace fabric::ecs
 
 		bool deserialize(FILE* binary_file);
 
+		void clear();
+
 	private:
 		utl::vector<id::id_type> m_entity_registry;
         utl::unordered_map<id::id_type, sparse_set> m_component_registry;
