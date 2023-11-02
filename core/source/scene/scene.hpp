@@ -16,6 +16,7 @@ namespace fabric::ecs
 {
 	class entity;
 
+
 	struct component
 	{
 		entity* owner;
@@ -28,9 +29,6 @@ namespace fabric::ecs
 	void add_component(component& component);
 	void remove_component(entity e, id::id_type component);
 	void* get_component(entity e, id::id_type component);
-
-	bool save_scene();
-	bool load_scene();
 
 	class entity
 	{

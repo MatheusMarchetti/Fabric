@@ -1,19 +1,19 @@
-#include "registry.hpp"
 #include "scene.hpp"
+#include "registry.hpp"
 
 #include "source/utilities/graph.hpp"
 
+namespace
+{
+    fabric::ecs::registry m_registry;
+    fabric::utl::graph m_execution_graph;
+
+    // System storage - temporary. Need to move inside the registry
+    fabric::utl::unordered_map<fabric::id::id_type, void(*)()> m_system_registry;
+}
+
 namespace fabric::ecs
 {
-    namespace
-    {
-        registry m_registry;
-
-        // System storage - temporary
-        utl::unordered_map<id::id_type, void(*)()> m_system_registry;
-        utl::graph m_system_graph;
-    }
-
     entity create_entity()
     {
         return entity(m_registry.create_entity());
@@ -41,28 +41,13 @@ namespace fabric::ecs
     id::id_type add_system(id::id_type owner, void(*function)())
     {
         m_system_registry[owner] = function;
-        m_system_graph.add_node(owner);
+        m_execution_graph.add_node(owner);
         return owner;
     }
 
     void add_dependency(id::id_type system_id, id::id_type dependency)
     {
-        m_system_graph.add_dependency(system_id, dependency);
-    }
-
-    void run_systems()
-    {
-        m_system_graph.build();
-
-        auto execution_order = m_system_graph.get_execution_order();
-
-        for (auto& order : execution_order)
-        {
-            for (auto& index : order)
-            {
-                m_system_registry[index]();
-            }
-        }
+        m_execution_graph.add_dependency(system_id, dependency);
     }
 
     utl::span<entity> get_entities_with(id::id_type component_id)
@@ -108,8 +93,31 @@ namespace fabric::ecs
 
         return nullptr;
     }
+}
 
-    bool save_scene()
+namespace fabric::scene
+{
+    void initialize()
+    {
+        // register built-in systems
+        // initialize user scripts
+
+        m_execution_graph.build();
+    }
+
+    void update()
+    {
+        auto execution_queues = m_execution_graph.get_execution_order();
+
+        for (auto& queue : execution_queues)
+        {
+            // TODO: Dispatch each queue as a sequence of jobs in the job system
+            for (auto& entry : queue)
+                m_system_registry[entry]();
+        }
+    }
+
+    bool save()
     {
         // TODO: This should be handled by a VFS and accessed via a scene asset handle
         FILE* bin;
@@ -126,7 +134,7 @@ namespace fabric::ecs
         return false;
     }
 
-    bool load_scene()
+    bool load()
     {
         // TODO: This should be handled by a VFS and accessed via a scene asset handle
         FILE* bin;
@@ -142,6 +150,12 @@ namespace fabric::ecs
         }
 
         return false;
+    }
+
+    void unload()
+    {
+        m_registry.clear();
+        m_execution_graph.clear();
     }
 }
 

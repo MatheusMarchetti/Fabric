@@ -67,6 +67,8 @@ public:
 
 		system_test();
 
+		scene::initialize();
+
 		return true;
 	}
 
@@ -75,13 +77,13 @@ public:
 		entity_test();
 		component_test();
 
-		ecs::run_systems();
+		scene::update();
 		std::cin.get();
 	}
 
 	virtual void shutdown() override
 	{  
-		ecs::save_scene();
+		scene::save();
 	}
 
 private:

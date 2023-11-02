@@ -3,8 +3,12 @@
 #include "../source/memory/memory.hpp"
 #include "../source/scene/scene.hpp"
 
-// Temporary
-namespace fabric::ecs
+// TODO: Move inside the engine. Only load/save should be exposed
+namespace fabric::scene
 {
-	void run_systems();
+	void initialize();
+	void update();
+	bool save();
+	bool load();
+	void unload();
 }

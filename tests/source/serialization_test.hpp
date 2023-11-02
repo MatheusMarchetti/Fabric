@@ -54,7 +54,7 @@ void serialize()
 			e.add_component<Geometry>(g);
 	}
 
-	ecs::save_scene();
+	scene::save();
 }
 
 class engine_test : public test
@@ -64,7 +64,7 @@ public:
 	{
 		//serialize();
 
-		return ecs::load_scene();
+		return scene::load();
 	}
 
 	virtual void run() override
