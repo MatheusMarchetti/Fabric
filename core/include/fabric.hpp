@@ -4,6 +4,7 @@
 #include "../source/scene/scene.hpp"
 
 // TODO: Move inside the engine. Only load/save should be exposed
+// NOTE: Scene will probably be a standalone class
 namespace fabric::scene
 {
 	void initialize();
