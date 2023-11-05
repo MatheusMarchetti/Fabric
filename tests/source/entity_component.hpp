@@ -25,6 +25,17 @@ struct Transform
 			position[i] *= ts;
 		}
 	}
+
+	Transform operator * (float ts)
+	{
+		Transform result;
+		for (int i = 0; i < 3; i++)
+		{
+			result.position[i] = position[i] * ts;
+		}
+
+		return result;
+	}
 };
 
 struct Tag 
@@ -45,6 +56,7 @@ void update_transforms()
 
 	for (auto& entity : entities)
 	{
+		Transform transform;
 		utl::ref<Transform> t = entity.get_component<Transform>();
 
 		std::cout << "(Entity id: " << entity.get_id() << ") Transform before: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[0] << "]" << std::endl;
@@ -56,6 +68,8 @@ void update_transforms()
 		}
 
 		t *= 2.0f;
+
+		transform = t * 50.0f;
 
 		std::cout << "(Entity id: " << entity.get_id() << ") Transform after: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[0] << "]" << std::endl;
 	}

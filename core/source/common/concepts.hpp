@@ -14,14 +14,26 @@ namespace fabric
 	concept enable_if = std::enable_if<U::type>::type;
 
 	template<typename T, typename U>
-	concept mult_assign = requires (T a, U b) { {a *= b}; };
+	concept has_mult = requires (T a, U b) { {a * b} -> std::same_as<T>; };
 
 	template<typename T, typename U>
-	concept div_assign = requires (T a, U b) { {a /= b}; };
+	concept has_div = requires (T a, U b) { {a / b} -> std::same_as<T>; };
 
 	template<typename T, typename U>
-	concept add_assign = requires (T a, U b) { {a += b}; };
+	concept has_add = requires (T a, U b) { {a + b} -> std::same_as<T>; };
 
 	template<typename T, typename U>
-	concept sub_assign = requires (T a, U b) { {a -= b}; };
+	concept has_sub = requires (T a, U b) { {a - b} -> std::same_as<T>; };
+
+	template<typename T, typename U>
+	concept has_mult_assign = requires (T a, U b) { {a *= b}; };
+
+	template<typename T, typename U>
+	concept has_div_assign = requires (T a, U b) { {a /= b}; };
+
+	template<typename T, typename U>
+	concept has_add_assign = requires (T a, U b) { {a += b}; };
+
+	template<typename T, typename U>
+	concept has_sub_assign = requires (T a, U b) { {a -= b}; };
 }

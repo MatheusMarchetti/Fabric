@@ -71,87 +71,201 @@ namespace fabric::utl
 	class ref
 	{
 	public:
-		ref(T* object)
-		{
-			if (object)
-				m_object = *object;
-			else
-				m_object = {};
-		}
+		ref() = delete;
+		ref(T* object);
 
-		ref(const ref& rhs)
-		{
-			m_object = rhs.m_object;
-		}
+		ref(const ref& rhs);
+		ref(const ref&& rhs);
 
-		T* operator -> ()
-		{
-			if (m_object)
-				return &m_object.value().get();
-			
-			return nullptr;
-		}
+		~ref();
+
+		T* operator -> ();
 
 		template<typename U>
-		void operator = (U& rhs)
-		{
-			if (m_object)
-				m_object.value() = rhs;
-		}
+		void operator = (U& rhs);
 
-		operator bool()
-		{
-			return m_object ? true : false;
-		}
+		operator bool();
 
-		template<typename U>
-			requires mult_assign<T, U>
-		ref<T> operator *= (const U& rhs)
-		{
-			if (m_object)
-				m_object.value().get() *= rhs;
-				return *this;
+		// If T supports arithmetic operations, ref<T> also supports them
+		template<typename U> requires has_mult<T, U>
+		T operator * (const U& rhs);
 
-			return nullptr;
-		}
+		template<typename U> requires has_div<T, U>
+		T operator / (const U& rhs);
 
-		template<typename U>
-			requires div_assign<T, U>
-		ref<T> operator /= (const U& rhs)
-		{
-			if (m_object)
-				m_object.value().get() /= rhs;
-			return *this;
+		template<typename U> requires has_add<T, U>
+		T operator + (const U& rhs);
 
-			return nullptr;
-		}
+		template<typename U> requires has_sub<T, U>
+		T operator - (const U& rhs);
 
-		template<typename U>
-			requires add_assign<T, U>
-		ref<T> operator += (const U& rhs)
-		{
-			if (m_object)
-				m_object.value().get() += rhs;
-			return *this;
+		template<typename U> requires has_mult_assign<T, U>
+		ref<T> operator *= (const U& rhs);
 
-			return nullptr;
-		}
+		template<typename U> requires has_div_assign<T, U>
+		ref<T> operator /= (const U& rhs);
 
-		template<typename U>
-			requires sub_assign<T, U>
-		ref<T> operator -= (const U& rhs)
-		{
-			if (m_object)
-				m_object.value().get() -= rhs;
-			return *this;
+		template<typename U> requires has_add_assign<T, U>
+		ref<T> operator += (const U& rhs);
 
-			return nullptr;
-		}
+		template<typename U> requires has_sub_assign<T, U>
+		ref<T> operator -= (const U& rhs);
 
 	private:
 		utl::optional<utl::reference_wrapper<T>> m_object;
 	};
-}
 
-// utl::ref<Transform> transform = ecs::get_component<Transform>();
-// transform->position  -- if transform == null then this should be ignored
+	template<typename T>
+	inline ref<T>::ref(T* object)
+	{
+		if (object)
+			m_object = *object;
+		else
+			m_object = {};
+	}
+
+	template<typename T>
+	inline ref<T>::ref(const ref& rhs)
+	{
+		m_object = rhs.m_object;
+	}
+
+	template<typename T>
+	inline ref<T>::ref(const ref&& rhs)
+	{
+		m_object = std::move(rhs.m_object);
+		rhs.m_object = {};
+	}
+
+	template<typename T>
+	inline ref<T>::~ref()
+	{
+		m_object = {};
+	}
+
+	template<typename T>
+	inline T* ref<T>::operator -> ()
+	{
+		if (m_object)
+			return &m_object.value().get();
+
+		return nullptr;
+	}
+
+	template<typename T>
+	template<typename U>
+	inline void ref<T>::operator = (U& rhs)
+	{
+		if (m_object)
+			m_object.value() = rhs;
+	}
+
+	template<typename T>
+	inline ref<T>::operator bool()
+	{
+		return m_object ? true : false;
+	}
+	template<typename T>
+	template<typename U> requires has_mult_assign<T, U>
+	inline ref<T> ref<T>::operator *= (const U& rhs)
+	{
+		if (m_object)
+			m_object.value().get() *= rhs;
+		return *this;
+
+		return nullptr;
+	}
+
+	template<typename T>
+	template<typename U> requires has_div_assign<T, U>
+	inline ref<T> ref<T>::operator /= (const U& rhs)
+	{
+		if (m_object)
+			m_object.value().get() /= rhs;
+		return *this;
+
+		return nullptr;
+	}
+
+	template<typename T>
+	template<typename U> requires has_add_assign<T, U>
+	ref<T> ref<T>::operator += (const U& rhs)
+	{
+		if (m_object)
+			m_object.value().get() += rhs;
+		return *this;
+
+		return nullptr;
+	}
+
+	template<typename T>
+	template<typename U> requires has_sub_assign<T, U>
+	ref<T> ref<T>::operator -= (const U& rhs)
+	{
+		if (m_object)
+			m_object.value().get() -= rhs;
+		return *this;
+
+		return nullptr;
+	}
+
+	template<typename T>
+	template<typename U> requires has_mult<T, U>
+	inline T ref<T>::operator * (const U& rhs)
+	{
+		if (m_object)
+		{
+			T result;
+			result = m_object.value().get() * rhs;
+
+			return result;
+		}
+
+		return T();
+	}
+
+	template<typename T>
+	template<typename U> requires has_div<T, U>
+	inline T ref<T>::operator / (const U& rhs)
+	{
+		if (m_object)
+		{
+			T result;
+			result = m_object.value().get() / rhs;
+
+			return result;
+		}
+
+		return T();
+	}
+
+	template<typename T>
+	template<typename U> requires has_add<T, U>
+	inline T ref<T>::operator + (const U& rhs)
+	{
+		if (m_object)
+		{
+			T result;
+			result = m_object.value().get() + rhs;
+
+			return result;
+		}
+
+		return T();
+	}
+
+	template<typename T>
+	template<typename U> requires has_sub<T, U>
+	inline T ref<T>::operator - (const U& rhs)
+	{
+		if (m_object)
+		{
+			T result;
+			result = m_object.value().get() - rhs;
+
+			return result;
+		}
+
+		return T();
+	}
+}
