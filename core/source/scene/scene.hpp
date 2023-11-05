@@ -16,7 +16,6 @@ namespace fabric::ecs
 {
 	class entity;
 
-
 	struct component
 	{
 		entity* owner;
@@ -72,17 +71,9 @@ namespace fabric::ecs
 		}
 
 		template<typename Component>
-		constexpr Component& get_component()
+		constexpr utl::ref<Component> get_component()
 		{
-			Component* component = (Component*)ecs::get_component(*this, detail::get_component_id<Component>());
-
-			if (!component)
-			{
-				Component comp = Component();
-				component = &comp;
-			}
-
-			return *component;
+			return (Component*)ecs::get_component(*this, detail::get_component_id<Component>());
 		}
 
 		template<typename Component>

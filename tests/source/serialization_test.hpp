@@ -73,8 +73,8 @@ public:
 
 		for (auto& entity : entities)
 		{
-			Transform& t = entity.get_component<Transform>();
-			std::cout << t.position[0] << ", " << t.position[1] << ", " << t.position[2] << ", " << t.rotation << std::endl;
+			auto t = entity.get_component<Transform>();
+			std::cout << t->position[0] << ", " << t->position[1] << ", " << t->position[2] << ", " << t->rotation << std::endl;
 		}
 
 		entities = ecs::get_entities_with<Audio>();

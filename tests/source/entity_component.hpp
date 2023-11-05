@@ -45,16 +45,19 @@ void update_transforms()
 
 	for (auto& entity : entities)
 	{
-		Transform& t = entity.get_component<Transform>();
+		utl::ref<Transform> t = entity.get_component<Transform>();
 
-		std::cout << "Transform before: [" << t.position[0] << ", " << t.position[1] << ", " << t.position[0] << "]" << std::endl;
+		std::cout << "(Entity id: " << entity.get_id() << ") Transform before: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[0] << "]" << std::endl;
 
 		if (entity.has_component<Random>())
-			t *= (float)entity.get_component<Random>().random;
+		{
+			utl::ref<Random> r = entity.get_component<Random>();
+			t *= (float)r->random;
+		}
 
 		t *= 2.0f;
 
-		std::cout << "Transform after: [" << t.position[0] << ", " << t.position[1] << ", " << t.position[0] << "]" << std::endl;
+		std::cout << "(Entity id: " << entity.get_id() << ") Transform after: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[0] << "]" << std::endl;
 	}
 }
 
@@ -151,19 +154,28 @@ private:
 
 		e1.add_component<Random>();
 
-//		Transform t1 = e1.get_component<Transform>();
-//		t1.position[0] = 25.f;
-//		std::cout << t1.position[0] << std::endl;
+		utl::ref<Transform> t1 = e1.get_component<Transform>();
 
-		Random r1 = e1.get_component<Random>();
+		if (t1)
+		{
+			t1->position[0] = 25.f;
+			std::cout << t1->position[0] << std::endl;
+		}
+
+		auto r1 = e1.get_component<Random>();
 
 		e1.add_component<Transform>(transform);
 
-		if (e1.has_component<Random>())
+		if (r1)
 		{
+			std::cout << "Random before substitution: " << r1->random << std::endl;
+
 			e1.add_component<Random>(r);
-			
-			std::cout << "Random: " << r1.random << std::endl;
+			std::cout << "Random after substitution: " << r1->random << std::endl;
+
+			r.random *= 5;
+			r1 = r;
+			std::cout << "Random after overwrite: " << r1->random << std::endl;
 		}
 
 		transform *= 10.0f;
@@ -172,11 +184,11 @@ private:
 		{
 			e1.add_component<Transform>(transform);
 
-			Transform t = e1.get_component<Transform>();
+			utl::ref<Transform> t = e1.get_component<Transform>();
 
-			std::cout << "Position X: " << t.position[0] << std::endl;
-			std::cout << "Position Y: " << t.position[1] << std::endl;
-			std::cout << "Position Z: " << t.position[2] << std::endl;
+			std::cout << "Position X: " << t->position[0] << std::endl;
+			std::cout << "Position Y: " << t->position[1] << std::endl;
+			std::cout << "Position Z: " << t->position[2] << std::endl;
 
 		}
 

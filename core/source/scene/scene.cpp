@@ -7,9 +7,6 @@ namespace
 {
     fabric::ecs::registry m_registry;
     fabric::utl::graph m_execution_graph;
-
-    // System storage - temporary. Need to move inside the registry
-    fabric::utl::unordered_map<fabric::id::id_type, void(*)()> m_system_registry;
 }
 
 namespace fabric::ecs
@@ -40,8 +37,9 @@ namespace fabric::ecs
 
     id::id_type add_system(id::id_type owner, void(*function)())
     {
-        m_system_registry[owner] = function;
+        m_registry.register_system(owner, function);
         m_execution_graph.add_node(owner);
+
         return owner;
     }
 
@@ -86,12 +84,7 @@ namespace fabric::ecs
 
     void* get_component(entity e, id::id_type component)
     {
-        assert(has_component(e, component));
-
-        if (has_component(e, component))
-            return m_registry.get_component_storage(component)[e.get_id()];
-
-        return nullptr;
+        return has_component(e, component) ? m_registry.get_component_storage(component)[e.get_id()] : nullptr;
     }
 }
 
@@ -113,7 +106,7 @@ namespace fabric::scene
         {
             // TODO: Dispatch each queue as a sequence of jobs in the job system
             for (auto& entry : queue)
-                m_system_registry[entry]();
+                m_registry.get_system_proc(entry)();
         }
     }
 
