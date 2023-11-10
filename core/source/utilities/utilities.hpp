@@ -3,8 +3,10 @@
 #define USE_STL_VECTOR 1
 #define USE_STL_SPAN 1
 #define USE_STL_UNORDERED_MAP 1
+#define USE_STL_UNORDERED_SET 1
 #define USE_STL_OPTIONAL 1
 #define USE_STL_REFERENCE_WRAPPER 1
+#define USE_STL_LIST 1
 
 #if USE_STL_VECTOR
 #include <vector>
@@ -47,6 +49,15 @@ namespace fabric::utl
 }
 #endif
 
+#if USE_STL_UNORDERED_SET
+#include <unordered_set>
+namespace fabric::utl
+{
+	template<typename Key>
+	using unordered_set = typename std::unordered_set<Key>;
+}
+#endif
+
 #if USE_STL_OPTIONAL
 #include <optional>
 namespace fabric::utl
@@ -62,6 +73,15 @@ namespace fabric::utl
 {
 	template<typename T>
 	using reference_wrapper = typename std::reference_wrapper<T>;
+}
+#endif
+
+#if USE_STL_LIST
+#include <list>
+namespace fabric::utl
+{
+	template<typename T>
+	using list = typename std::list<T>;
 }
 #endif
 
