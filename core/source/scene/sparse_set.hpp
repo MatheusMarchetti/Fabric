@@ -111,7 +111,7 @@ namespace fabric::ecs
 
 			if (m_size > index)
 			{
-				size_t next_component = (m_next_component - (char*)m_component) / m_component_size;
+				id::id_type next_component = (m_next_component - (char*)m_component) / m_component_size;
 
 				if (id::is_valid(m_sparse[index]))
 				{
@@ -223,11 +223,10 @@ namespace fabric::ecs
 		if (id::is_valid(id))
 		{
 			id::id_type index = m_sparse[id::index(id)];
-			size_t last = ((m_next_component - (char*)m_component) / m_component_size);
+			size_t last = ((m_next_component - (char*)m_component) / m_component_size) - 1;
 
-			if (id::is_valid(index) && last > 0)
+			if (id::is_valid(index) && last >= 0)
 			{
-				last = last - 1;
 				m_next_component -= m_component_size;
 
 				m_dense[index] = m_dense[last];

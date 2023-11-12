@@ -45,7 +45,7 @@ namespace fabric::ecs
 	{
 	public:
 		explicit entity() : m_id{ id::invalid_id } {}
-		explicit entity(id::id_type id) : m_id(id) {}
+		entity(id::id_type id) : m_id(id) {}
 
 		id::id_type get_id() { return m_id; }
 
@@ -116,10 +116,10 @@ namespace fabric::ecs
 	entity create_entity();
 	void remove_entity(entity e);
 	bool is_alive(entity e);
-	utl::span<entity> get_entities_with(id::id_type id);
+	utl::vector<entity> get_entities_with(id::id_type id);
 
 	template<typename Component>
-	utl::span<entity> get_entities_with()
+	utl::vector<entity> get_entities_with()
 	{
 		return get_entities_with(detail::get_component_id<Component>());
 	}

@@ -16,6 +16,10 @@ namespace fabric::ecs
 
         id::id_type& operator[](id::id_type index);
 
+		void assign_component_to_entity(id::id_type entity_id, id::id_type component_id);
+
+		void remove_component_from_entity(id::id_type entity_id, id::id_type component_id);
+
         sparse_set& get_component_storage(id::id_type component_id);
 
         u32 get_component_count(id::id_type component_id);
@@ -36,6 +40,7 @@ namespace fabric::ecs
 
 	private:
 		utl::vector<id::id_type> m_entity_registry;
+		utl::vector<utl::set<id::id_type>> m_archetypes;
         utl::unordered_map<id::id_type, sparse_set> m_component_registry;
 		utl::unordered_map<id::id_type, system_proc> m_system_registry;
 

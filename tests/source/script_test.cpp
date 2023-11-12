@@ -27,7 +27,7 @@ namespace
 
 void update()
 {
-	utl::span<ecs::entity> entities = ecs::get_entities_with<script_test>();
+	utl::vector<ecs::entity> entities = ecs::get_entities_with<script_test>();
 
 	for (auto& entity : entities)
 	{

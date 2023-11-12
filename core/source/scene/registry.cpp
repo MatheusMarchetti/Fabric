@@ -20,39 +20,42 @@ namespace fabric::ecs
     }
 
 	id::id_type registry::create_entity()
-	{
+    {
+        if (m_free_count)
         {
-            if (m_free_count)
+            id::id_type id = id::new_generation(m_next);
+            id::id_type index = id::index(id);
+
+            m_next = m_entity_registry[index];
+            m_entity_registry[index] = id;
+
+            index = id::index(m_next);
+
+            if (index != id::invalid_index)
             {
-                id::id_type id = id::new_generation(m_next);
-                id::id_type index = id::index(id);
-
-                m_next = m_entity_registry[index];
-                m_entity_registry[index] = id;
-
-                index = id::index(m_next);
-
-                if (index != id::invalid_index)
-                {
-                    id::id_type generation = id::generation(m_entity_registry[index]);
-                    m_next = id::new_identifier(index, generation);
-                }
-                else
-                    m_next = id::invalid_id;
-
-                m_free_count--;
-
-                return id;
+                id::id_type generation = id::generation(m_entity_registry[index]);
+                m_next = id::new_identifier(index, generation);
             }
+            else
+                m_next = id::invalid_id;
 
-            size_t index = m_entity_registry.size();
-            u32 generation = 0;
+            m_free_count--;
 
-            id::id_type id = m_entity_registry.emplace_back(id::new_identifier(index, generation));
+            m_archetypes[index] = {};
 
             return id;
         }
-	}
+
+        size_t index = m_entity_registry.size();
+        u32 generation = 0;
+
+        id::id_type id = m_entity_registry.emplace_back(id::new_identifier(index, generation));
+
+        index = id::index(id);
+        if (index >= m_archetypes.size()) m_archetypes.push_back({});
+
+        return id;
+    }
 
     void registry::remove_entity(id::id_type entity_id)
     {
@@ -64,6 +67,11 @@ namespace fabric::ecs
 
         m_next = entity_id;
         m_free_count++;
+
+        utl::set<id::id_type> components = m_archetypes[index];
+
+        for (auto& component : components)
+            m_component_registry[component].remove(entity_id);
     }
 
     id::id_type& registry::operator[](id::id_type index)
@@ -71,9 +79,20 @@ namespace fabric::ecs
         return m_entity_registry[index];
     }
 
+    void registry::assign_component_to_entity(id::id_type entity_id, id::id_type component_id)
+    {
+        assert(id::index(entity_id) < m_archetypes.size());
+
+        m_archetypes[id::index(entity_id)].insert(component_id);
+    }
+
+    void registry::remove_component_from_entity(id::id_type entity_id, id::id_type component_id)
+    {
+        m_archetypes[id::index(entity_id)].erase(component_id);
+    }
+
     sparse_set& registry::get_component_storage(id::id_type component_id)
     {
-        assert(component_exists(component_id));
         return m_component_registry[component_id];
     }
 
@@ -184,6 +203,8 @@ namespace fabric::ecs
     {
         u32 entity_count;
         fread(&entity_count, sizeof(entity_count), 1, binary_file);
+
+        m_archetypes.resize(entity_count);
 
         u32 total_size;
         fread(&total_size, sizeof(total_size), 1, binary_file);

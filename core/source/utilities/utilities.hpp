@@ -7,6 +7,7 @@
 #define USE_STL_OPTIONAL 1
 #define USE_STL_REFERENCE_WRAPPER 1
 #define USE_STL_LIST 1
+#define USE_STL_SET 1
 
 #if USE_STL_VECTOR
 #include <vector>
@@ -82,6 +83,15 @@ namespace fabric::utl
 {
 	template<typename T>
 	using list = typename std::list<T>;
+}
+#endif
+
+#if USE_STL_SET
+#include <set>
+namespace fabric::utl
+{
+	template<typename T>
+	using set = typename std::set<T>;
 }
 #endif
 

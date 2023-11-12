@@ -59,12 +59,14 @@ namespace fabric::ecs
         m_execution_graph.add_dependency(system_id, dependency);
     }
 
-    utl::span<entity> get_entities_with(id::id_type component_id)
+    utl::vector<entity> get_entities_with(id::id_type component_id)
     {
         size_t size = m_registry.get_component_count(component_id);
         entity* entities = m_registry.get_component_storage(component_id).dense();
 
-        return utl::span<entity>(entities, size);
+        utl::vector<entity> e(size);
+        e.assign(entities, entities + size);
+        return e;
     }
 
     bool has_component(entity e, id::id_type component)
@@ -80,6 +82,7 @@ namespace fabric::ecs
         if (!m_registry.component_exists(component.id))
             m_registry.register_component(component.id, component.size);
 
+        m_registry.assign_component_to_entity(component.owner->get_id(), component.id);
         m_registry.get_component_storage(component.id).emplace(*component.owner, component.data);
     }
 
@@ -89,6 +92,7 @@ namespace fabric::ecs
 
         if (has_component(e, component))
         {
+            m_registry.remove_component_from_entity(e.get_id(), component);
             m_registry.get_component_storage(component).remove(e);
         }
     }
