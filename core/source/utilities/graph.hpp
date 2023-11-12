@@ -172,6 +172,8 @@ namespace fabric::utl
 	{
 		if(m_nodes_map.size() != m_global_execution_nodes.size())
 		{
+			clear();
+
 			build_adjacency_list();
 
 			if (sort())
@@ -485,8 +487,6 @@ namespace fabric::utl
 
 	inline void graph::clear()
 	{
-		m_nodes_map.clear();
-		m_nodes.clear();
 		m_adjacency_list.clear();
 		m_dependency_levels.clear();
 		m_queue_node_counters.clear();

@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 
+#include "EntitySpawner.hpp"
+
 using namespace fabric;
 
 REGISTER_SCRIPT(script_test)
@@ -26,5 +28,7 @@ void script_test::update()
 			std::cout << "Entity that contains script is: " << entity.get_id() << ", its transform component is: "
 				<< t->position[0] << ", " << t->position[1] << ", " << t->position[2] << " and script 'speed' is: " << s->speed << std::endl;
 		}
+
+		entity.add_component<EntitySpawner>();
 	}
 }

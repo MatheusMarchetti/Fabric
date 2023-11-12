@@ -104,7 +104,7 @@ private:
 		transform.position[1] = 2.0f;
 		transform.position[2] = 3.0f;
 
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < 2; i++)
 		{
 			ecs::entity e = ecs::create_entity();
 			Random r;

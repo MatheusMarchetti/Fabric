@@ -16,9 +16,12 @@ int main()
 #endif
 	engine_test test{};
 
+	u32 run_count = 5;
+
 	if (test.initialize())
 	{
-		test.run();
+		for(u32 frame = 0; frame < run_count; frame++)
+			test.run();
 	}
 
 	test.shutdown();
