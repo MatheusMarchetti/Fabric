@@ -1,16 +1,39 @@
-#include "registry.hpp"
 #include "scene.hpp"
+#include "registry.hpp"
+
+#include "source/utilities/graph.hpp"
+#include "include/fabric.hpp"
+
+namespace
+{
+    fabric::ecs::registry m_registry;
+    fabric::utl::graph m_execution_graph;
+
+    using script_factory = void* (*)();
+    using script_registry = fabric::utl::unordered_map<fabric::id::id_type, script_factory>;
+    using name_registry = fabric::utl::unordered_map<const char*, fabric::id::id_type>;
+
+    static void* m_script_instance;
+
+#ifdef USE_WITH_EDITOR
+    name_registry& get_name_registry()
+    {
+        static name_registry reg;
+
+        return reg;
+    }
+#endif
+
+    script_registry& get_script_registry()
+    {
+        static script_registry reg;
+
+        return reg;
+    }
+}
 
 namespace fabric::ecs
 {
-    namespace
-    {
-        registry m_registry;
-
-        // System storage - temporary
-        std::unordered_map<id::id_type, void(*)()> m_system_registry;
-    }
-
     entity create_entity()
     {
         return entity(m_registry.create_entity());
@@ -35,31 +58,27 @@ namespace fabric::ecs
         return id::generation(m_registry[index]) == generation;
     }
 
-    id::id_type register_system(id::id_type owner, void(*function)())
+    id::id_type add_system(id::id_type owner, std::function<void()>& function)
     {
-        m_system_registry[owner] = function;
+        m_registry.register_system(owner, function);
+        m_execution_graph.add_node(owner);
+
         return owner;
     }
 
     void add_dependency(id::id_type system_id, id::id_type dependency)
     {
-        
+        m_execution_graph.add_dependency(system_id, dependency);
     }
 
-    void run_systems()
-    {
-        for (auto& system : m_system_registry)
-        {
-            system.second();
-        }
-    }
-
-    std::span<entity> get_entities_with(id::id_type component_id)
+    utl::vector<entity> get_entities_with(id::id_type component_id)
     {
         size_t size = m_registry.get_component_count(component_id);
         entity* entities = m_registry.get_component_storage(component_id).dense();
 
-        return std::span<entity>(entities, size);
+        utl::vector<entity> e(size);
+        e.assign(entities, entities + size);
+        return e;
     }
 
     bool has_component(entity e, id::id_type component)
@@ -75,6 +94,7 @@ namespace fabric::ecs
         if (!m_registry.component_exists(component.id))
             m_registry.register_component(component.id, component.size);
 
+        m_registry.assign_component_to_entity(component.owner->get_id(), component.id);
         m_registry.get_component_storage(component.id).emplace(*component.owner, component.data);
     }
 
@@ -84,21 +104,52 @@ namespace fabric::ecs
 
         if (has_component(e, component))
         {
+            m_registry.remove_component_from_entity(e.get_id(), component);
             m_registry.get_component_storage(component).remove(e);
         }
     }
 
     void* get_component(entity e, id::id_type component)
     {
-        assert(has_component(e, component));
+        return has_component(e, component) ? m_registry.get_component_storage(component)[e.get_id()] : nullptr;
+    }
+}
 
-        if (has_component(e, component))
-            return m_registry.get_component_storage(component)[e.get_id()];
+namespace detail
+{
+    void* get_script_instance(fabric::id::id_type id)
+    {
+        m_script_instance = get_script_registry()[id]();
+        return m_script_instance;
+    }
+}
 
-        return nullptr;
+namespace fabric::scene
+{
+    void initialize()
+    {
+        // register built-in systems
+        
     }
 
-    bool save_scene()
+    void update()
+    {
+        m_execution_graph.build();
+        auto execution_queues = m_execution_graph.get_execution_order();
+
+        for (auto& queue : execution_queues)
+        {
+            // TODO: Dispatch each queue as a sequence of jobs in the job system
+            for (auto& entry : queue)
+            {
+                std::function<void()> function = m_registry.get_system_proc(entry);
+
+                if (function) function();
+            }
+        }
+    }
+
+    bool save()
     {
         // TODO: This should be handled by a VFS and accessed via a scene asset handle
         FILE* bin;
@@ -115,7 +166,7 @@ namespace fabric::ecs
         return false;
     }
 
-    bool load_scene()
+    bool load()
     {
         // TODO: This should be handled by a VFS and accessed via a scene asset handle
         FILE* bin;
@@ -131,6 +182,32 @@ namespace fabric::ecs
         }
 
         return false;
+    }
+
+    void unload()
+    {
+        m_registry.clear();
+        m_execution_graph.clear();
+    }
+
+#ifdef USE_WITH_EDITOR
+    u8 add_script_name(const char* name, id::id_type id)
+    {
+        bool result = get_name_registry().insert(name_registry::value_type{ name, id }).second;
+
+        assert(result);
+
+        return result;
+    }
+#endif
+
+    u8 register_script(id::id_type id, script_factory creator)
+    {
+        bool result = get_script_registry().insert(script_registry::value_type{ id, creator }).second;
+        
+        assert(result);
+
+        return result;
     }
 }
 
