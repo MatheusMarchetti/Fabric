@@ -114,12 +114,12 @@ namespace fabric::ecs
         m_component_registry[component_id] = ecs::sparse_set::create(component_size);
     }
 
-    void registry::register_system(id::id_type component_id, system_proc func)
+    void registry::register_system(id::id_type component_id, std::function<system_proc>& func)
     {
         m_system_registry[component_id] = func;
     }
 
-    registry::system_proc registry::get_system_proc(id::id_type component_id)
+    std::function<registry::system_proc>& registry::get_system_proc(id::id_type component_id)
     {
         return m_system_registry[component_id];
     }

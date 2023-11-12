@@ -123,14 +123,16 @@ namespace fabric::ecs
 	{
 		return get_entities_with(detail::get_component_id<Component>());
 	}
+
+#define BIND_PROC(x) [this]() -> void { x(); }
 	
-	id::id_type add_system(id::id_type owner, void(*function)());
+	id::id_type add_system(id::id_type owner, std::function<void()>& function);
 	void add_dependency(id::id_type system_id, id::id_type dependency);
 
 	// NOTE: The template requirement ensures that the user doesn't add the owner as a dependency
 	template<typename Owner, typename Head, typename... Tail>
 		requires is_not_same<Owner, Head>
-	void register_system(void(*function)())
+	void register_system(std::function<void()> function)
 	{
 		id::id_type id = ecs::add_system(detail::get_component_id<Owner>(), function);
 		ecs::add_dependency(id, detail::get_component_id<Head>());
@@ -140,7 +142,7 @@ namespace fabric::ecs
 	}
 
 	template<typename Owner>
-	void register_system(void(*function)())
+	void register_system(std::function<void()> function)
 	{
 		id::id_type id = ecs::add_system(detail::get_component_id<Owner>(), function);
 	}

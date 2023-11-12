@@ -8,7 +8,7 @@ namespace fabric::ecs
 	class registry
 	{
 	public:
-		using system_proc = void(*)();
+		using system_proc = void();
 
         id::id_type create_entity();
 
@@ -28,9 +28,9 @@ namespace fabric::ecs
 
 		void register_component(id::id_type component_id, u32 component_size);
 
-		void register_system(id::id_type component_id, system_proc func);
+		void register_system(id::id_type component_id, std::function<system_proc>& func);
 
-		system_proc get_system_proc(id::id_type component_id);
+		std::function<registry::system_proc>& get_system_proc(id::id_type component_id);
 
 		void serialize(FILE* binary_file);
 
@@ -42,7 +42,7 @@ namespace fabric::ecs
 		utl::vector<id::id_type> m_entity_registry;
 		utl::vector<utl::set<id::id_type>> m_archetypes;
         utl::unordered_map<id::id_type, sparse_set> m_component_registry;
-		utl::unordered_map<id::id_type, system_proc> m_system_registry;
+		utl::unordered_map<id::id_type, std::function<system_proc>> m_system_registry;
 
 		id::id_type m_next = id::invalid_id;
 		u32 m_free_count = 0;
