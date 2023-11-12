@@ -9,7 +9,7 @@ using namespace fabric;
 REGISTER_SCRIPT(script_test)
 bool script_test::initialize()
 {
-	std::cout << "Created script! \n";
+	std::cout << "Created script script_test! \n";
 
 	ecs::register_system<script_test, Transform>(BIND_PROC(script_test::update));
 
@@ -25,10 +25,14 @@ void script_test::update()
 		if (auto t = entity.get_component<Transform>())
 		{
 			auto s = entity.get_component<script_test>();
-			std::cout << "Entity that contains script is: " << entity.get_id() << ", its transform component is: "
-				<< t->position[0] << ", " << t->position[1] << ", " << t->position[2] << " and script 'speed' is: " << s->speed << std::endl;
+			std::cout << "Entity that contains script_test is: " << entity.get_id() << ", its transform component is: "
+				<< t->position[0] << ", " << t->position[1] << ", " << t->position[2] << " and script_test 'speed' is: " << s->speed << std::endl;
 		}
 
-		entity.add_component<EntitySpawner>();
+		if(!entity.has_component<EntitySpawner>())
+		{
+			std::cout << "Adding EntitySpawner to entity " << entity.get_id() << std::endl;
+			entity.add_component<EntitySpawner>();
+		}
 	}
 }

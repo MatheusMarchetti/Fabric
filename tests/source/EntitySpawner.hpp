@@ -7,6 +7,6 @@ class EntitySpawner
 public:
 	bool initialize();
 
+	inline static u32 EntityCount = 0;
 private:
-
 };

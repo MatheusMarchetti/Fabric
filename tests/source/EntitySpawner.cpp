@@ -19,10 +19,10 @@ void update()
 
 		e.add_component<Counter>();
 
-		auto entities = ecs::get_entities_with<Counter>();
-
-		std::cout << "Spawned: " << entities.size() << std::endl;
+		EntitySpawner::EntityCount++;
 	}
+
+	std::cout << "Spawned count: " << EntitySpawner::EntityCount << std::endl;
 }
 
 bool EntitySpawner::initialize()

@@ -92,7 +92,7 @@ private:
 
 		ecs::entity e1 = entities[0];
 
-		std::cout << "Setting entity 0 script 'speed' to 5 \n";
+		std::cout << "Setting entity 0 script_test 'speed' to 5 \n";
 		auto s1 = e1.get_component<script_test>();
 		s1->speed = 5.f;
 	}
