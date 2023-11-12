@@ -4,20 +4,11 @@
 
 #include "include/fabric.hpp"
 
+#include "script_test.hpp"
+
 #include <iostream>
 
 using namespace fabric;
-
-struct Transform
-{
-	float position[3];
-	float rotation;
-
-	Transform()
-	{
-		rotation = 5.0f;
-	}
-};
 
 struct Audio
 {
@@ -31,7 +22,9 @@ struct Geometry
 
 void serialize()
 {
-	for (u32 i = 0; i < 25; i++)
+	u32 entity_count = 10;
+
+	for (u32 i = 0; i < entity_count; i++)
 	{
 		Transform t;
 		t.position[0] = 0.0f;
@@ -47,6 +40,10 @@ void serialize()
 		ecs::entity e = ecs::create_entity();
 		e.add_component<Transform>(t);
 
+		e.add_component<script_test>();
+		auto s = e.get_component<script_test>();
+		s->speed = 10.f * rand();
+
 		if(i % 2)
 			e.add_component<Audio>(a);
 
@@ -54,7 +51,14 @@ void serialize()
 			e.add_component<Geometry>(g);
 	}
 
-	ecs::save_scene();
+	scene::save();
+
+	auto entities = ecs::get_entities_with<Transform>();
+
+	for (auto& entity : entities)
+	{
+		ecs::remove_entity(entity);
+	}
 }
 
 class engine_test : public test
@@ -64,7 +68,7 @@ public:
 	{
 		serialize();
 
-		return ecs::load_scene();
+		return scene::load();
 	}
 
 	virtual void run() override
@@ -73,8 +77,12 @@ public:
 
 		for (auto& entity : entities)
 		{
-			Transform& t = entity.get_component<Transform>();
-			std::cout << t.position[0] << ", " << t.position[1] << ", " << t.position[2] << ", " << t.rotation << std::endl;
+			auto t = entity.get_component<Transform>();
+			std::cout << t->position[0] << ", " << t->position[1] << ", " << t->position[2] << std::endl;
+
+			auto s = entity.get_component<script_test>();
+
+			std::cout << s->speed << std::endl;
 		}
 
 		entities = ecs::get_entities_with<Audio>();

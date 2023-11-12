@@ -1,5 +1,5 @@
-#define TEST_ENTITY_COMPONENT 0
-#define TEST_SERIALIZATION 1
+#define TEST_ENTITY_COMPONENT 1
+#define TEST_SERIALIZATION 0
 
 #if TEST_ENTITY_COMPONENT
 #include "entity_component.hpp"
@@ -16,9 +16,12 @@ int main()
 #endif
 	engine_test test{};
 
+	u32 run_count = 5;
+
 	if (test.initialize())
 	{
-		test.run();
+		for(u32 frame = 0; frame < run_count; frame++)
+			test.run();
 	}
 
 	test.shutdown();
