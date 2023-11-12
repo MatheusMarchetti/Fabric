@@ -10,6 +10,8 @@ namespace
 
     using script_factory = void* (*)();
     using script_registry = fabric::utl::unordered_map<fabric::id::id_type, script_factory>;
+    
+    static void* m_script_instance;
 
     script_registry& get_registry()
     {
@@ -97,25 +99,37 @@ namespace fabric::ecs
     }
 }
 
+namespace detail
+{
+    void* get_script_instance(fabric::id::id_type id)
+    {
+        m_script_instance = get_registry()[id]();
+        return m_script_instance;
+    }
+}
+
 namespace fabric::scene
 {
     void initialize()
     {
         // register built-in systems
-        // initialize user scripts
-
-        m_execution_graph.build();
+        
     }
 
     void update()
     {
+        m_execution_graph.build();
         auto execution_queues = m_execution_graph.get_execution_order();
 
         for (auto& queue : execution_queues)
         {
             // TODO: Dispatch each queue as a sequence of jobs in the job system
             for (auto& entry : queue)
-                m_registry.get_system_proc(entry)();
+            {
+                ecs::registry::system_proc proc = m_registry.get_system_proc(entry);
+
+                if (proc) proc();
+            }
         }
     }
 

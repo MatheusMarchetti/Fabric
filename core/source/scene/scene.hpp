@@ -10,6 +10,8 @@ namespace detail
 		static fabric::id::id_type id = fabric::id::id_type(typeid(Component).hash_code());
 		return id;
 	}
+
+	void* get_script_instance(fabric::id::id_type id);
 }
 
 namespace fabric
@@ -38,6 +40,7 @@ namespace fabric::ecs
 	void remove_component(entity e, id::id_type component);
 	void* get_component(entity e, id::id_type component);
 
+
 	class entity
 	{
 	public:
@@ -59,6 +62,21 @@ namespace fabric::ecs
 			{
 				.owner = this,
 				.id = detail::get_component_id<Component>(),
+				.size = sizeof(Component)
+			};
+
+			ecs::add_component(component);
+		}
+
+		template<typename Component>
+			requires has_initialize<Component>
+		constexpr void add_component()
+		{
+			component component
+			{
+				.owner = this,
+				.id = detail::get_component_id<Component>(),
+				.data = detail::get_script_instance(detail::get_component_id<Component>()),
 				.size = sizeof(Component)
 			};
 

@@ -13,6 +13,9 @@ namespace fabric
 	template<class U>
 	concept enable_if = std::enable_if<U::type>::type;
 
+	template<typename T>
+	concept has_initialize = requires (T t) { {t.initialize()} -> std::same_as<bool>; };
+
 	template<typename T, typename U>
 	concept has_mult = requires (T a, U b) { {a * b} -> std::same_as<T>; };
 

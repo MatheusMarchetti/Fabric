@@ -4,6 +4,8 @@
 
 #include "include/fabric.hpp"
 
+#include "script_test.hpp"
+
 #include <iostream>
 #include <ctime>
 
@@ -12,30 +14,6 @@ using namespace fabric;
 struct Random
 {
 	u32 random;
-};
-
-struct Transform
-{
-	float position[3];
-
-	void operator *=(float ts)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			position[i] *= ts;
-		}
-	}
-
-	Transform operator * (float ts)
-	{
-		Transform result;
-		for (int i = 0; i < 3; i++)
-		{
-			result.position[i] = position[i] * ts;
-		}
-
-		return result;
-	}
 };
 
 struct Tag 
@@ -59,7 +37,7 @@ void update_transforms()
 		Transform transform;
 		utl::ref<Transform> t = entity.get_component<Transform>();
 
-		std::cout << "(Entity id: " << entity.get_id() << ") Transform before: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[0] << "]" << std::endl;
+		std::cout << "(Entity id: " << entity.get_id() << ") Transform before: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[2] << "]" << std::endl;
 
 		if (entity.has_component<Random>())
 		{
@@ -71,7 +49,7 @@ void update_transforms()
 
 		transform = t * 50.0f;
 
-		std::cout << "(Entity id: " << entity.get_id() << ") Transform after: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[0] << "]" << std::endl;
+		std::cout << "(Entity id: " << entity.get_id() << ") Transform after: [" << t->position[0] << ", " << t->position[1] << ", " << t->position[2] << "]" << std::endl;
 	}
 }
 
@@ -91,8 +69,7 @@ public:
 
 	virtual void run() override
 	{ 
-		entity_test();
-		component_test();
+		ecs_test();
 
 		scene::update();
 		std::cin.get();
@@ -104,113 +81,20 @@ public:
 	}
 
 private:
-	void entity_test()
+	void ecs_test()
 	{
-		ecs::entity e1 = ecs::create_entity();
-		ecs::entity e2 = ecs::create_entity();
-		ecs::entity e3 = ecs::create_entity();
-		ecs::entity e4 = ecs::create_entity();
+		utl::span<ecs::entity> entities = ecs::get_entities_with<Transform>();
 
-		std::cout << "Entity id: " << e1.get_id() << std::endl;
-		std::cout << "Entity id: " << e2.get_id() << std::endl;
-		std::cout << "Entity id: " << e3.get_id() << std::endl;
-		std::cout << "Entity id: " << e4.get_id() << std::endl;
-
-		ecs::remove_entity(e1);
-		ecs::remove_entity(e2);
-		ecs::remove_entity(e3);
-		ecs::remove_entity(e4);
-
-		ecs::entity e5 = ecs::create_entity();
-		ecs::entity e6 = ecs::create_entity();
-		ecs::entity e7 = ecs::create_entity();
-		ecs::entity e8 = ecs::create_entity();
-
-		std::cout << "Entity id: " << e5.get_id() << std::endl;
-		std::cout << "Entity id: " << e6.get_id() << std::endl;
-		std::cout << "Entity id: " << e7.get_id() << std::endl;
-		std::cout << "Entity id: " << e8.get_id() << std::endl;
-
-		ecs::remove_entity(e5);
-		ecs::remove_entity(e6);
-		ecs::remove_entity(e7);
-		ecs::remove_entity(e8);
-
-		ecs::entity e9 = ecs::create_entity();
-		ecs::entity e10 = ecs::create_entity();
-		ecs::entity e11 = ecs::create_entity();
-		ecs::entity e12 = ecs::create_entity();
-
-		std::cout << "Entity id: " << e9.get_id() << std::endl;
-		std::cout << "Entity id: " << e10.get_id() << std::endl;
-		std::cout << "Entity id: " << e11.get_id() << std::endl;
-		std::cout << "Entity id: " << e12.get_id() << std::endl;
-
-		ecs::remove_entity(e9);
-		ecs::remove_entity(e10);
-		ecs::remove_entity(e11);
-		ecs::remove_entity(e12);
-	}
-
-	void component_test()
-	{
-		Random r;
-		r.random = rand() % 20;
-
-		Transform transform;
-		transform.position[0] = 1.0f;
-		transform.position[1] = 2.0f;
-		transform.position[2] = 3.0f;
-
-		ecs::entity e1 = ecs::create_entity();
-
-		e1.add_component<Tag>();
-
-		e1.add_component<Random>();
-
-		utl::ref<Transform> t1 = e1.get_component<Transform>();
-
-		if (t1)
+		for (auto& entity : entities)
 		{
-			t1->position[0] = 25.f;
-			std::cout << t1->position[0] << std::endl;
+			entity.add_component<script_test>();
 		}
 
-		auto r1 = e1.get_component<Random>();
+		ecs::entity e1 = entities[0];
 
-		e1.add_component<Transform>(transform);
-
-		if (r1)
-		{
-			std::cout << "Random before substitution: " << r1->random << std::endl;
-
-			e1.add_component<Random>(r);
-			std::cout << "Random after substitution: " << r1->random << std::endl;
-
-			r.random *= 5;
-			r1 = r;
-			std::cout << "Random after overwrite: " << r1->random << std::endl;
-		}
-
-		transform *= 10.0f;
-
-		if (e1.has_component<Transform>())
-		{
-			e1.add_component<Transform>(transform);
-
-			utl::ref<Transform> t = e1.get_component<Transform>();
-
-			std::cout << "Position X: " << t->position[0] << std::endl;
-			std::cout << "Position Y: " << t->position[1] << std::endl;
-			std::cout << "Position Z: " << t->position[2] << std::endl;
-
-		}
-
-		e1.remove_component<Tag>();
-		e1.remove_component<Random>();
-		e1.remove_component<Transform>();
-
-		ecs::remove_entity(e1);
+		std::cout << "Setting entity 0 script 'speed' to 5 \n";
+		auto s1 = e1.get_component<script_test>();
+		s1->speed = 5.f;
 	}
 
 	void system_test()
@@ -220,7 +104,7 @@ private:
 		transform.position[1] = 2.0f;
 		transform.position[2] = 3.0f;
 
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 1; i++)
 		{
 			ecs::entity e = ecs::create_entity();
 			Random r;
@@ -230,7 +114,7 @@ private:
 		}
 
 		ecs::register_system<Transform, Random, Tag>(update_transforms);
-		ecs::register_system<Random>(system_func);
+		ecs::register_system<Random>(nullptr);
 		ecs::register_system<Tag, Random>(system_func);
 	}
 
