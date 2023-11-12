@@ -31,6 +31,8 @@ class script_test
 public:
 	bool initialize();
 
+	void update();
+
 	float speed;
 
 private:

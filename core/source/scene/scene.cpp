@@ -2,6 +2,7 @@
 #include "registry.hpp"
 
 #include "source/utilities/graph.hpp"
+#include "include/fabric.hpp"
 
 namespace
 {
@@ -10,12 +11,23 @@ namespace
 
     using script_factory = void* (*)();
     using script_registry = fabric::utl::unordered_map<fabric::id::id_type, script_factory>;
-    
+    using name_registry = fabric::utl::unordered_map<const char*, fabric::id::id_type>;
+
     static void* m_script_instance;
 
-    script_registry& get_registry()
+#ifdef USE_WITH_EDITOR
+    name_registry& get_name_registry()
+    {
+        static name_registry reg;
+
+        return reg;
+    }
+#endif
+
+    script_registry& get_script_registry()
     {
         static script_registry reg;
+
         return reg;
     }
 }
@@ -46,7 +58,7 @@ namespace fabric::ecs
         return id::generation(m_registry[index]) == generation;
     }
 
-    id::id_type add_system(id::id_type owner, void(*function)())
+    id::id_type add_system(id::id_type owner, std::function<void()>& function)
     {
         m_registry.register_system(owner, function);
         m_execution_graph.add_node(owner);
@@ -107,7 +119,7 @@ namespace detail
 {
     void* get_script_instance(fabric::id::id_type id)
     {
-        m_script_instance = get_registry()[id]();
+        m_script_instance = get_script_registry()[id]();
         return m_script_instance;
     }
 }
@@ -130,9 +142,9 @@ namespace fabric::scene
             // TODO: Dispatch each queue as a sequence of jobs in the job system
             for (auto& entry : queue)
             {
-                ecs::registry::system_proc proc = m_registry.get_system_proc(entry);
+                std::function<void()> function = m_registry.get_system_proc(entry);
 
-                if (proc) proc();
+                if (function) function();
             }
         }
     }
@@ -178,9 +190,20 @@ namespace fabric::scene
         m_execution_graph.clear();
     }
 
+#ifdef USE_WITH_EDITOR
+    u8 add_script_name(const char* name, id::id_type id)
+    {
+        bool result = get_name_registry().insert(name_registry::value_type{ name, id }).second;
+
+        assert(result);
+
+        return result;
+    }
+#endif
+
     u8 register_script(id::id_type id, script_factory creator)
     {
-        bool result = get_registry().insert(script_registry::value_type{ id, creator }).second;
+        bool result = get_script_registry().insert(script_registry::value_type{ id, creator }).second;
         
         assert(result);
 
