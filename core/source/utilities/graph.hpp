@@ -68,7 +68,7 @@ namespace fabric::utl
 
 		void build_dependency_levels();
 
-		void finalize_dependency_levels();
+		void build_synchronizations();
 
 		void cull_redundant_synchronizations();
 
@@ -148,19 +148,11 @@ namespace fabric::utl
 
 	inline void graph::add_dependency(id::id_type dependent, id::id_type dependency)
 	{
+		assert(m_nodes_map.contains(dependent));
+
 		graph_node& g_node = m_nodes_map[dependent];
 
-		if (!m_nodes_map.contains(dependency))
-		{
-			graph_node d_node
-			{
-				.node_id = dependency
-			};
-
-			m_nodes.push_back(d_node);
-			m_nodes.back().node_index = (u32)m_nodes.size() - 1;
-			m_nodes_map.insert({ dependency, m_nodes.back() });
-		}
+		add_node(dependency);
 
 		u32 index = m_nodes_map[dependency].node_index;
 		graph_node& d_node = m_nodes[index];
@@ -178,13 +170,16 @@ namespace fabric::utl
 
 	inline void graph::build()
 	{
-		build_adjacency_list();
-
-		if (sort())
+		if(m_nodes_map.size() != m_global_execution_nodes.size())
 		{
-			build_dependency_levels();
-			finalize_dependency_levels();
-			cull_redundant_synchronizations();
+			build_adjacency_list();
+
+			if (sort())
+			{
+				build_dependency_levels();
+				build_synchronizations();
+				cull_redundant_synchronizations();
+			}
 		}
 	}
 
@@ -316,7 +311,7 @@ namespace fabric::utl
 		return execution_list;
 	}
 
-	void graph::finalize_dependency_levels()
+	void graph::build_synchronizations()
 	{
 		u32 global_execution_index = 0;
 
