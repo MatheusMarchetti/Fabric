@@ -29,6 +29,8 @@ namespace fabric::ecs
             m_next = m_entity_registry[index];
             m_entity_registry[index] = id;
 
+            m_archetypes[index] = {};
+
             index = id::index(m_next);
 
             if (index != id::invalid_index)
@@ -40,8 +42,6 @@ namespace fabric::ecs
                 m_next = id::invalid_id;
 
             m_free_count--;
-
-            m_archetypes[index] = {};
 
             return id;
         }
