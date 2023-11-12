@@ -83,7 +83,7 @@ public:
 private:
 	void ecs_test()
 	{
-		utl::span<ecs::entity> entities = ecs::get_entities_with<Transform>();
+		utl::vector<ecs::entity> entities = ecs::get_entities_with<Transform>();
 
 		for (auto& entity : entities)
 		{
