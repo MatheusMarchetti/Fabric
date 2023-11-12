@@ -12,6 +12,15 @@ namespace detail
 	}
 }
 
+namespace fabric
+{
+	class script
+	{
+	public:
+		virtual void initialize() = 0;
+	};
+}
+
 namespace fabric::ecs
 {
 	class entity;

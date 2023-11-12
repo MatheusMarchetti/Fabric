@@ -7,6 +7,15 @@ namespace
 {
     fabric::ecs::registry m_registry;
     fabric::utl::graph m_execution_graph;
+
+    using script_factory = void* (*)();
+    using script_registry = fabric::utl::unordered_map<fabric::id::id_type, script_factory>;
+
+    script_registry& get_registry()
+    {
+        static script_registry reg;
+        return reg;
+    }
 }
 
 namespace fabric::ecs
@@ -149,6 +158,15 @@ namespace fabric::scene
     {
         m_registry.clear();
         m_execution_graph.clear();
+    }
+
+    u8 register_script(id::id_type id, script_factory creator)
+    {
+        bool result = get_registry().insert(script_registry::value_type{ id, creator }).second;
+        
+        assert(result);
+
+        return result;
     }
 }
 
