@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="Source\Editors\DockSpaceView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Source\Project\CreateProjectView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Source\Project\OpenProjectView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Source\Project\ProjectBrowserWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Source\Editors\DockSpaceView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Source\Project\CreateProjectView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Source\Project\OpenProjectView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Source\Project\ProjectBrowserWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Source\Resources\ControlStyles.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+</Project>

@@ -34,7 +34,6 @@
 *.sln
 *.bin
 *.vcxproj*
-*.csproj*
 *.vs*
 editor/obj
 editor/source/obj

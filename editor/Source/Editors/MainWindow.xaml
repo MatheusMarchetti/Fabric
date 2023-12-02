@@ -1,0 +1,21 @@
+﻿<Window x:Class="editor.Editors.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:editor.Editors"
+        xmlns:projects="clr-namespace:editor.Project"
+        mc:Ignorable="d"
+        Title="{Binding Name}" Height="720" Width="1280">
+    <Window.DataContext>
+        <projects:GameProject />
+    </Window.DataContext>
+    
+    <DockPanel x:Name="dockPanel">
+        <local:DockSpaceView x:Name="leftPanel" DockPanel.Dock="Left" />
+        <local:DockSpaceView x:Name="rightPanel" DockPanel.Dock="Right" />
+        <local:DockSpaceView x:Name="topPanel" DockPanel.Dock="Top" />
+        <local:DockSpaceView x:Name="bottomPanel" DockPanel.Dock="Bottom" />
+        <local:DockSpaceView x:Name="centerPanel"/>
+    </DockPanel>
+</Window>
